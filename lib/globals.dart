@@ -2,6 +2,8 @@ library ftiotsystem.globals;
 
 import 'dart:ffi';
 
+import 'package:intl/intl.dart';
+
 String g_internet_ssid = "";
 String g_internet_password = "";
 
@@ -44,4 +46,30 @@ double parseDouble(dynamic dAmount){
   }
 
   return returnAmount;
+}
+
+String getTimeCard(String when) {
+  try {
+    final dash = when.substring(4, 5);
+    if (dash == '-') {
+      return DateFormat('h:mm a').format(DateTime.parse(when));
+    } else {
+      return 'h:mm a';
+    }
+  } catch (e) {
+    return 'h:mm a';
+  }
+}
+
+String getDateCard(String when) {
+  try {
+    final dash = when.substring(4, 5);
+    if (dash == '-') {
+      return DateFormat('EEE dd, MMM yyyy').format(DateTime.parse(when));
+    } else {
+      return 'EEE dd, MMM yyyy';
+    }
+  } catch (e) {
+    return 'EEE dd, MMM yyyy';
+  }
 }

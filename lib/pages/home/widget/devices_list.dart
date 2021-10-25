@@ -54,7 +54,7 @@ class _DevicesListState extends State<DevicesList> {
               });
 
 
-              print('${deviceLists.toString()}');
+              print('**device lists all=${deviceLists.toString()}');
               return GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 5.0,
@@ -136,10 +136,10 @@ class _DeviceCardState extends State<DeviceCard> {
                         Text('${widget.device.name}',
                           style: nameStyle,
                         ),
-                        Text('${DateFormat('h:mm a').format(DateTime.parse(widget.device.updatedWhen))}',
+                        Text('${globals.getTimeCard(widget.device.updatedWhen)}',
                           style: subtitleStyle,
                         ),
-                        Text('${DateFormat('EEE dd, MMM yyyy').format(DateTime.parse(widget.device.updatedWhen))}',
+                        Text('${globals.getDateCard(widget.device.updatedWhen)}',
                           style: subtitleStyle,
                         ),
                         Text('${widget.device.readVoltage} volt',
@@ -408,4 +408,6 @@ class _DeviceCardState extends State<DeviceCard> {
       ),
     );
   }
+
+
 }
