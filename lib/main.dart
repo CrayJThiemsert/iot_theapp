@@ -5,12 +5,15 @@ import 'package:iot_theapp/pages/device/choose_device.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/view/show_device_page.dart';
 import 'package:iot_theapp/pages/network/choose_network.dart';
+import 'package:iot_theapp/pages/network/entity/scenario_entity.dart';
 import 'package:iot_theapp/utils/constants.dart';
 import 'package:package_info/package_info.dart';
 import 'package:iot_theapp/globals.dart' as globals;
 
+import 'package:shelf/shelf_io.dart' as shelf_io;
+
 import 'pages/home/home.dart';
-import 'dart:io' show Platform;
+// import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,6 +90,7 @@ class _MyAppState extends State<MyApp> {
 
           subtitle1: TextStyle(fontFamily: 'Kanit', fontSize: 12.0, fontWeight: FontWeight.w300, color: Colors.grey.withOpacity(0.6),),
           subtitle2: TextStyle(fontFamily: 'Kanit', fontSize: 12.0, fontWeight: FontWeight.w600, color: Colors.lightGreen,),
+          bodyText1: TextStyle(fontFamily: 'Kanit', fontSize: 14.0, fontWeight: FontWeight.w300, color: Colors.grey.withOpacity(0.9),),
 
           headline1: TextStyle(fontFamily: 'Kanit', fontSize: 36.0, fontWeight: FontWeight.w300, color: Colors.white,),
           headline2: TextStyle(fontFamily: 'Kanit', fontSize: 12.0, fontWeight: FontWeight.w300, color: Colors.white,),
@@ -108,9 +112,9 @@ class _MyAppState extends State<MyApp> {
         if(settings.name == '/') {
           return MaterialPageRoute(builder: (context) => HomePage(app: widget.app));
         } else if(settings.name == '/choosenetwork') {
-          return MaterialPageRoute(builder: (context) => ChooseNetworkPage());
+          return MaterialPageRoute(builder: (context) => ChooseNetworkPage(scenario: Scenario(),));
         } else if(settings.name == '/choosedevice') {
-          return MaterialPageRoute(builder: (context) => ChooseDevicePage());
+          return MaterialPageRoute(builder: (context) => ChooseDevicePage(scenario: Scenario(),));
         }
         // Prepare for case specify device id
         var uri = Uri.parse(settings.name!);

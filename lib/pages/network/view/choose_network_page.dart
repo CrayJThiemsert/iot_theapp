@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_theapp/pages/device/choose_device.dart';
+import 'package:iot_theapp/pages/network/entity/scenario_entity.dart';
+import 'package:iot_theapp/pages/network/view/guide_choose_device_page.dart';
 import 'package:iot_theapp/utils/constants.dart';
 // import 'package:wifi/wifi.dart';
 import 'package:wifi_configuration_2/wifi_configuration_2.dart';
@@ -16,7 +18,15 @@ String _password = '';  // Wifi password
 WifiConfiguration wifiConfiguration = WifiConfiguration();
 
 class ChooseNetworkPage extends StatefulWidget {
-  late Socket channel;
+  // late Socket channel;
+  // Socket channel;
+  const ChooseNetworkPage({
+    Key? key,
+    required this.scenario,
+  }) : super(key: key);
+
+  final Scenario scenario;
+
 
   @override
   _ChooseNetworkPageState createState() => new _ChooseNetworkPageState();
@@ -50,6 +60,7 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
       appBar: AppBar(
         // title: Text('${Constants.of(context).DEFAULT_THE_NODE_IP} Internet Wifi Network'),
         title: Text('Internet Wifi Network'),
+        backgroundColor: Colors.cyan[400],
         centerTitle: true,
       ),
       body: SafeArea(
@@ -62,6 +73,23 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
         ),
       ),
     );
+  }
+
+  String getTitle(Scenario scenario) {
+    switch(scenario.index) {
+      case 1: {
+        return 'Internet Wifi Network 2/5';
+      }
+      break;
+      case 2: {
+        return 'Local Wifi Network 2/5';
+      }
+      break;
+      default: {
+        return 'Internet Wifi Network 2/5';
+      }
+      break;
+    }
   }
 
   void checkConnection() async {
@@ -83,8 +111,21 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
   Widget itemSSID(index) {
     if (index == 0) {
       final TextStyle? captionStyle = Theme.of(context).textTheme.headline4;
+      final TextStyle? subtitleStyle = Theme.of(context).textTheme.bodyText1;
       return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          Container(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text('Please choose a SSID and password network',
+                  textAlign: TextAlign.left,
+                  style: subtitleStyle,
+                ),
+              ),
+            ),
           TextField(
             decoration: InputDecoration(
               border: UnderlineInputBorder(),
@@ -117,16 +158,36 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
             },
           ),
           ElevatedButton(
-            child: Text('next'),
+            child: Text('Next'),
+            style: ElevatedButton.styleFrom(
+              primary: Colors.cyan[400],
+              // padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+              // textStyle: TextStyle(
+              //     fontSize: 30,
+              //     fontWeight: FontWeight.bold)
+            ),
             onPressed: () {
               // Navigate to add new device page
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChooseDevicePage()),
+                // MaterialPageRoute(builder: (context) => ChooseDevicePage(scenario:  widget.scenario)),
+                MaterialPageRoute(builder: (context) => GuideChooseDevicePage(scenario:  widget.scenario)),
               );
             },
             // onPressed: executeEsptouch, // too complicated to use, because we don't know how to verify/handle response.
           ),
+          Divider(),
+          Container(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text('Available Internet Network List:',
+                textAlign: TextAlign.left,
+                style: subtitleStyle,
+              ),
+            ),
+          ),
+          Divider(),
           // ElevatedButton(
           //   child: Text('connection'),
           //   onPressed: connection,
@@ -207,19 +268,6 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
     return 'images/wifi$wifiLevel.png';
   }
 
-  void _togglePower() {
-    print("call _togglePower...");
-    // widget.channel.write("POWER\n");
-  }
-
-  void _fan() {
-    widget.channel.write("FAN\n");
-  }
-
-  void _mode() {
-    widget.channel.write("MODE\n");
-  }
-
   @override
   void dispose() {
     // widget.channel.close();
@@ -291,14 +339,14 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
   }
 
   void doneHandler(){
-    widget.channel.destroy();
+    // widget.channel.destroy();
   }
 
   void gotoNextPage() {
     // Navigate to add new device page
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChooseNetworkPage()),
+      MaterialPageRoute(builder: (context) => ChooseNetworkPage(scenario: widget.scenario,)),
     );
   }
 

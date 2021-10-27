@@ -5,6 +5,7 @@ import 'package:after_layout/after_layout.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:iot_theapp/pages/network/entity/scenario_entity.dart';
 
 import 'package:iot_theapp/utils/constants.dart';
 // import 'package:wifi/wifi.dart';
@@ -24,7 +25,15 @@ String _deviceName = '';  // Device name
 WifiConfiguration wifiConfiguration = WifiConfiguration();
 
 class ChooseDevicePage extends StatefulWidget {
-  late Socket channel;
+  const ChooseDevicePage({
+    Key? key,
+    required this.scenario,
+  }) : super(key: key);
+
+  // late Socket channel;
+  final Scenario scenario;
+
+
 
   @override
   _ChooseDevicePageState createState() => new _ChooseDevicePageState();
@@ -205,19 +214,6 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
     }
   }
 
-  void _togglePower() {
-    print("call _togglePower...");
-    // widget.channel.write("POWER\n");
-  }
-
-  void _fan() {
-    widget.channel.write("FAN\n");
-  }
-
-  void _mode() {
-    widget.channel.write("MODE\n");
-  }
-
   @override
   void dispose() {
     // widget.channel.close();
@@ -296,14 +292,14 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
   }
 
   void doneHandler(){
-    widget.channel.destroy();
+    // widget.channel.destroy();
   }
 
   void gotoNextPage() {
     // Navigate to add new device page
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChooseDevicePage()),
+      MaterialPageRoute(builder: (context) => ChooseDevicePage(scenario: widget.scenario,)),
     );
   }
 
