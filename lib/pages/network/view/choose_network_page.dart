@@ -155,6 +155,7 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
               password = value;
               _password = password;
               globals.g_internet_password = _password;
+              print('globals.g_internet_password=${globals.g_internet_password}');
             },
           ),
           ElevatedButton(
@@ -379,5 +380,6 @@ class _ChooseNetworkPageState extends State<ChooseNetworkPage> with AfterLayoutM
     _ssid = ssid;
     _ssidController.text = _ssid;
     globals.g_internet_ssid = _ssid;
+    print('globals.g_internet_ssid=${globals.g_internet_ssid}');
   }
 }

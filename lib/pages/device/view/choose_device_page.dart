@@ -366,9 +366,10 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
     // _ssidController.text = globals.g_internet_ssid;
     // _passwordController.text = globals.g_internet_password;
 
-    // AppSettings.openWIFISettings(asAnotherTask: true).then((value) => scanMatchedTheNode() );
+
     print("open wifi settings...");
-    AppSettings.openWIFISettings(asAnotherTask: true).then((value) => checkConnection() );
+    AppSettings.openWIFISettings(asAnotherTask: true).then((value) => scanMatchedTheNode() );
+    // AppSettings.openWIFISettings(asAnotherTask: true).then((value) => checkConnection() );
   }
 
   // void scanMatchedTheNode() {
@@ -402,20 +403,31 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
       print("Time: ${DateTime.now()}");
 
       // String wifiName = await Wifi.ssid;
-      String deviceWifiName = _ssid;
-      setState(() {
-        _wifiName = deviceWifiName;
-        _ssidController.text = _ssid;
-        if(_ssid.contains("theNode_")) {
-          _passwordController.text = "Device[${_ssid}] Matched";
-          _ssidController.text = "Device[${_ssid}] Matched";
-          timer.cancel();
-        } else {
-          _passwordController.text = "Device[${_ssid}] Not Matched";
-          _ssidController.text = "Device[${_ssid}] Not Matched";
-        }
-        print("${_passwordController.text}");
-      });
+      WifiConnectionObject wifiConnectionObject =
+      await wifiConfiguration!.connectedToWifi();
+
+
+
+      if (wifiConnectionObject != null) {
+        print('xxConnection name: ${wifiConnectionObject.ssid}');
+        _ssid = wifiConnectionObject.ssid!;
+        print('_ssid=$_ssid');
+        String deviceWifiName = _ssid;
+        setState(() {
+          _wifiName = deviceWifiName;
+          _ssidController.text = _ssid;
+          if(_ssid.contains("theNode_")) {
+            _passwordController.text = "Device[${_ssid}] Matched";
+            _ssidController.text = "Device[${_ssid}] Matched";
+            timer.cancel();
+          } else {
+            _passwordController.text = "Device[${_ssid}] Not Matched";
+            _ssidController.text = "Device[${_ssid}] Not Matched";
+          }
+          print("${_passwordController.text}");
+        });
+      }
+
     });
   }
 

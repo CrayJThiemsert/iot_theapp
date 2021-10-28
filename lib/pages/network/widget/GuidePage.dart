@@ -86,17 +86,15 @@ class _GuidePageState extends State<GuidePage> {
           ),
           onPressed:
             enableButton(widget.scenario) ? ()=> {
-              // Navigate to add new device page
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => gotoNextPage(scenario)),
-              )
+              navigateToNextPage(scenario)
             } : null,
 
         ),
       ],
     );
   }
+
+
 
   bool enableButton(Scenario scenario) {
     bool isEnabled = true ;
@@ -109,6 +107,15 @@ class _GuidePageState extends State<GuidePage> {
     // }
 
     return isEnabled;
+  }
+
+  void navigateToNextPage(Scenario scenario) {
+    print('${scenario}');
+    // Navigate to add new device page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => gotoNextPage(scenario)),
+    );
   }
 
   Widget gotoNextPage(Scenario scenario) {
