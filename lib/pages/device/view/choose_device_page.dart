@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:app_settings/app_settings.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:iot_theapp/pages/network/entity/scenario_entity.dart';
@@ -309,7 +310,23 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
 
   void gotoHomePage() {
     pushInternetWifiAccessData();
-    Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+    showDialog(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: Text("Add New Device Finished"),
+        content: Text("Please select back to your internet wifi ssid.\ The App will restart."),
+        actions: [
+          CupertinoDialogAction(
+            child: Text("OK"),
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+            },
+          ),
+        ],
+      ),
+      barrierDismissible: false
+    );
+
   }
 
 

@@ -120,9 +120,9 @@ class WeatherData {
     return WeatherData(
       uid: snap.value['uid'] ?? '',
       deviceId: snap.value['deviceId'] ?? '',
-      humidity: double.parse(snap.value['humidity'].toString()) ?? double.nan,
-      temperature: double.parse(snap.value['temperature'].toString()) ?? double.nan,
-      readVoltage: double.parse(snap.value['readVoltage'].toString()) ?? double.nan,
+      humidity: double.parse(snap.value['humidity'].toString()),
+      temperature: double.parse(snap.value['temperature'].toString()),
+      readVoltage: double.parse(snap.value['readVoltage'].toString()),
     );
   }
 
