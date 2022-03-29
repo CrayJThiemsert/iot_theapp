@@ -37,7 +37,9 @@ class DeviceDatabase {
     // Demonstrates configuring to the database using a file
     print('user.uid=${user.uid}');
     // _historyRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history').orderByKey().limitToFirst(1);
-    _historyRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
+    // _historyRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
+    _historyRef = FirebaseDatabase.instance.ref().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
+
     // _historyRef = FirebaseDatabase.instance.reference().child('users/cray/devices/${device.uid}/${device.uid}_history').orderByKey().limitToFirst(1);
     // Demonstrates configuring the database directly
     // _deviceRef = database.reference().child('users/${user.uid}/devices/${device.uid}');

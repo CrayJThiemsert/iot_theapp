@@ -148,6 +148,7 @@ class _GuideChooseDevicePageState extends State<GuideChooseDevicePage> with Afte
             }
           } else {
             wifiName = (await _wifiInfo.getWifiName())!;
+            print('wifiName=$wifiName');
           }
         } on PlatformException catch (e) {
           print(e.toString());

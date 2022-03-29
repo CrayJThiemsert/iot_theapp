@@ -426,7 +426,7 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
     Timer.periodic(Duration(seconds: 5), (timer) async {
       print("Time: ${DateTime.now()}");
 
-      getActiveWifiNetwork() async {
+      // getActiveWifiNetwork() async {
         ActiveWifiNetwork activeWifiNetwork = await AndroidFlutterWifi.getActiveWifiInfo();
         print('xxConnection name: ${activeWifiNetwork.ssid}');
         _ssid = activeWifiNetwork.ssid!;
@@ -445,7 +445,7 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
           }
           print("${_passwordController.text}");
         });
-      }
+      // }
 
 
       // // String wifiName = await Wifi.ssid;
