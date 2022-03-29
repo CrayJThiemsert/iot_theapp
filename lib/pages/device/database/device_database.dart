@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart' as firebaseauth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
 import 'package:iot_theapp/pages/user/model/user.dart';
@@ -10,11 +10,12 @@ import 'package:iot_theapp/pages/user/model/user.dart';
 class DeviceDatabase {
   late DatabaseReference _deviceRef;
   late DatabaseReference _historyRef;
-  late StreamSubscription<DatabaseEvent> _historySubscription;
+  // late StreamSubscription<DatabaseEvent> _historySubscription;
 
   // Demonstrates configuring the database directly
   // final FirebaseDatabase database = FirebaseDatabase();
-  final FirebaseDatabase database = FirebaseDatabase.instance;
+  final _database = FirebaseDatabase.instance.ref();
+  late StreamSubscription _historyStream;
   late WeatherHistory _weatherHistoryValue;
   FirebaseException? error;
 
@@ -36,9 +37,27 @@ class DeviceDatabase {
   void initState() {
     // Demonstrates configuring to the database using a file
     print('user.uid=${user.uid}');
+
+    _historyStream = _database.child('users/${user.uid}/devices/${device.uid}/${device.uid}_history').onValue.listen((event) {
+      _weatherHistoryValue = event.snapshot.value as WeatherHistory;
+      }, onError: (Object o) {
+        error = o as FirebaseException;
+      }
+    );
+
+    // StreamBuilder(
+    //   stream: _database.child('users/${user.uid}/devices/${device.uid}/${device.uid}_history').onValue,
+    //   builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+    //     if(snapshot.hasData) {
+    //       _weatherHistoryValue = WeatherHistory.fromRTDB snapshot.data! as DatabaseEvent) as WeatherHistorysnapshot.value as WeatherHistory;
+    //     }
+    //   },
+    //
+    // );
+
     // _historyRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history').orderByKey().limitToFirst(1);
     // _historyRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
-    _historyRef = FirebaseDatabase.instance.ref().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
+    // _historyRef = FirebaseDatabase.instance.ref().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history');
 
     // _historyRef = FirebaseDatabase.instance.reference().child('users/cray/devices/${device.uid}/${device.uid}_history').orderByKey().limitToFirst(1);
     // Demonstrates configuring the database directly
@@ -48,9 +67,9 @@ class DeviceDatabase {
     // });
 
 
-    database.setPersistenceEnabled(true);
-    database.setPersistenceCacheSizeBytes(10000000);
-    _historyRef.keepSynced(true);
+    // _database.setPersistenceEnabled(true);
+    // _database.setPersistenceCacheSizeBytes(10000000);
+    // _historyRef.keepSynced(true);
 
     // _historySubscription = _historyRef.onValue.listen((Event event) {
     //   error = null;
@@ -59,13 +78,15 @@ class DeviceDatabase {
     //   error = o;
     // });
 
-    _historySubscription = _historyRef.onValue.listen((DatabaseEvent event) {
-      error = null;
-      _weatherHistoryValue = event.snapshot.value as WeatherHistory;
 
-    }, onError: (Object o) {
-      final FirebaseException error = o as FirebaseException;
-    });
+
+    // _historyStream = _historyRef.onValue.listen((DatabaseEvent event) {
+    //   error = null;
+    //   _weatherHistoryValue = event.snapshot.value as WeatherHistory;
+    //
+    // }, onError: (Object o) {
+    //   final FirebaseException error = o as FirebaseException;
+    // });
   }
 
   FirebaseException? getError() {
@@ -126,10 +147,11 @@ class DeviceDatabase {
 
   void dispose() {
 
-    if(_historySubscription != null) {
-      _historySubscription.cancel();
+    if(_historyStream != null) {
+      _historyStream.cancel();
     }
   }
+
 
 
 }
