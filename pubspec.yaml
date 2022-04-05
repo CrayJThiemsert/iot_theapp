@@ -87,6 +87,9 @@ dependencies:
   # This Flutter plugin provides an API for querying information about an application package.
   package_info_plus: ^1.4.0
 
+  # Chart
+  fl_chart: ^0.50.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

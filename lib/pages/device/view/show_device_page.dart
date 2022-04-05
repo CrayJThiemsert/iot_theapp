@@ -1,14 +1,18 @@
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_theapp/pages/device/database/device_database.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
+import 'package:iot_theapp/pages/device/view/line_chart_live.dart';
 import 'package:iot_theapp/pages/user/model/user.dart';
 import 'package:iot_theapp/utils/constants.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:iot_theapp/globals.dart' as globals;
+
+import '../../../line_chart_sample10.dart';
 
 class ShowDevicePage extends StatefulWidget {
   final String deviceUid;
@@ -46,6 +50,17 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
   int selectedInterval = 5000; // milliseconds
 
+  // Draw Live Line Chart
+  final Color sinColor = Colors.blueAccent;
+  final Color cosColor = Colors.orangeAccent;
+
+  final limitCount = 100;
+  final sinPoints = <FlSpot>[];
+  final cosPoints = <FlSpot>[];
+
+  double xValue = 0;
+  double step = 1; // original 0.05;
+
   // _ShowDevicePageState(String deviceUid, Device device) {
   //   this.deviceUid = deviceUid;
   //   this.device = device;
@@ -74,7 +89,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   Widget build(BuildContext context) {
 
     var deviceRef = FirebaseDatabase.instance
-        .reference()
+        .ref()
         .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
         .orderByKey()
         .limitToLast(1);
@@ -91,112 +106,172 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             var weatherHistory =
                 WeatherHistory.fromJson(snap.data!.snapshot.value as Map);
             // var weatherHistory = WeatherHistory.fromSnapshot(snap.data.snapshot);
+
+            // Prepare value to draw live line chart
+            while (sinPoints.length > limitCount) {
+              sinPoints.removeAt(0);
+              cosPoints.removeAt(0);
+            }
+            // used to be setState
+            print('xValue=${xValue}, weatherHistory.temperature=${weatherHistory.weatherData.temperature}|${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}');
+            print('xValue=${xValue}, weatherHistory.humidity=${weatherHistory.weatherData.humidity}');
+              sinPoints.add(FlSpot(xValue, weatherHistory.weatherData.temperature));
+              cosPoints.add(FlSpot(xValue, weatherHistory.weatherData.humidity));
+
+            print('sinPoints.length=${sinPoints.length}');
+            xValue += step;
+
             return Scaffold(
               appBar: AppBar(
                 title: Text('${device.name ?? device.uid} Detail'),
               ),
-              body: Column(
-                children: [
-                  SizedBox(height: 50,),
-                  Center(
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: new BoxDecoration(
-                        color: Colors.lightGreen.shade800,
-                        border: Border.all(color: Colors.green.shade400, width: 8.0),
-                        borderRadius: new BorderRadius.all(Radius.circular(150.0)),
-                      ),
-                      child: IntrinsicHeight(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Column(
-                              children: [
-                                SizedBox(height: 50,),
-                                Container(
-                                  child: Text(
-                                    '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
-                                    // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
-                                    style: headlineStyle,
-                                    // style: TextStyle(
-                                    //   color: Colors.white,
-                                    //   fontFamily: 'Kanit',
-                                    //   fontWeight: FontWeight.w300,
-                                    //   fontSize: 36.0,
-                                    // ),
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 50,),
+                    Center(
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: new BoxDecoration(
+                          color: Colors.lightGreen.shade800,
+                          border: Border.all(color: Colors.green.shade400, width: 8.0),
+                          borderRadius: new BorderRadius.all(Radius.circular(150.0)),
+                        ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(height: 50,),
+                                  Container(
+                                    child: Text(
+                                      '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
+                                      // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
+                                      style: headlineStyle,
+                                      // style: TextStyle(
+                                      //   color: Colors.white,
+                                      //   fontFamily: 'Kanit',
+                                      //   fontWeight: FontWeight.w300,
+                                      //   fontSize: 36.0,
+                                      // ),
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  child: Text(
-                                    'Temperature (\u2103)',
-                                    style: unitStyle,
+                                  Container(
+                                    child: Text(
+                                      'Temperature (\u2103)',
+                                      style: unitStyle,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            VerticalDivider(
-                              color: Colors.grey.withOpacity(0.2),
-                              thickness: 2,
-                              // width: 10,
-                              indent: 10,
-                              endIndent: 10,
-                            ),
+                                ],
+                              ),
+                              VerticalDivider(
+                                color: Colors.grey.withOpacity(0.2),
+                                thickness: 2,
+                                // width: 10,
+                                indent: 10,
+                                endIndent: 10,
+                              ),
 
-                            Column(
-                              children: [
-                                SizedBox(height: 50,),
-                                Container(
-                                  child: Text(
-                                    '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
-                                    style: headlineStyle,
-                                    // style: TextStyle(
-                                    //   color: Colors.white,
-                                    //   fontFamily: 'Kanit',
-                                    //   fontWeight: FontWeight.w300,
-                                    //   fontSize: 36.0,
-                                    // ),
+                              Column(
+                                children: [
+                                  SizedBox(height: 50,),
+                                  Container(
+                                    child: Text(
+                                      '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
+                                      style: headlineStyle,
+                                      // style: TextStyle(
+                                      //   color: Colors.white,
+                                      //   fontFamily: 'Kanit',
+                                      //   fontWeight: FontWeight.w300,
+                                      //   fontSize: 36.0,
+                                      // ),
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  child: Text(
-                                    'Humidity (%)',
-                                    style: unitStyle,
-                                    // style: TextStyle(
-                                    //   color: Colors.white,
-                                    //   fontFamily: 'Kanit',
-                                    //   fontWeight: FontWeight.w300,
-                                    //   fontSize: 12.0,
-                                    // ),
+                                  Container(
+                                    child: Text(
+                                      'Humidity (%)',
+                                      style: unitStyle,
+                                      // style: TextStyle(
+                                      //   color: Colors.white,
+                                      //   fontFamily: 'Kanit',
+                                      //   fontWeight: FontWeight.w300,
+                                      //   fontSize: 12.0,
+                                      // ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 50,),
-                  Center(
-                    child: Container(
-                      child: Text('Device ${device.name ?? device.uid} Detail'),
+                    SizedBox(height: 50,),
+                    Center(
+                      child: Container(
+                        child: Text('Device ${device.name ?? device.uid} Detail'),
+                      ),
                     ),
-                  ),
-                  Center(
-                    child: Container(
-                      child: Text('latest when ${weatherHistory?.weatherData?.uid ?? 'no data'}'),
+                    Center(
+                      child: Container(
+                        child: Text('latest when ${weatherHistory?.weatherData?.uid ?? 'no data'}'),
+                      ),
                     ),
-                  ),
-                  Center(
-                    child: Container(
-                      // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
-                      // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
-                      child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage ?? 'no data'} volts'),
+                    Center(
+                      child: Container(
+                        // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
+                        // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
+                        child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage ?? 'no data'} volts'),
+                      ),
                     ),
-                  ),
-                  buildReadingIntervalCard(context),
-                ],
+                    buildReadingIntervalCard(context),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: 28,
+                        right: 28,
+                      ),
+                      // child: LineChartSample10(),
+                      child: SizedBox(
+                        width: 150,
+                        height: 150,
+                        child: LineChart(
+                          LineChartData(
+                            minY: 0,
+                            maxY: 80,
+                            minX: sinPoints.first.x,
+                            maxX: sinPoints.last.x,
+                            lineTouchData: LineTouchData(enabled: false),
+                            clipData: FlClipData.all(),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                            ),
+                            lineBarsData: [
+                              sinLine(sinPoints),
+                              cosLine(cosPoints),
+                            ],
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+
+                                  reservedSize: 38,
+                                ),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           } else {
@@ -214,6 +289,38 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             );
           }
         });
+  }
+
+  LineChartBarData sinLine(List<FlSpot> points) {
+    return LineChartBarData(
+      spots: points,
+      dotData: FlDotData(
+        show: false,
+      ),
+      gradient: LinearGradient(
+          colors: [sinColor.withOpacity(0), sinColor],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: const [0.1, 1.0]),
+      barWidth: 4,
+      isCurved: false,
+    );
+  }
+
+  LineChartBarData cosLine(List<FlSpot> points) {
+    return LineChartBarData(
+      spots: points,
+      dotData: FlDotData(
+        show: false,
+      ),
+      gradient: LinearGradient(
+          colors: [cosColor.withOpacity(0), cosColor],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          stops: const [0.1, 1.0]),
+      barWidth: 4,
+      isCurved: false,
+    );
   }
 
   Card buildWorkingModeCard(BuildContext context) {
