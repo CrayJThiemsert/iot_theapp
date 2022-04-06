@@ -13,10 +13,15 @@ import 'package:http/http.dart' as http;
 import 'package:iot_theapp/globals.dart' as globals;
 
 import '../../../line_chart_sample10.dart';
+import 'indicator.dart';
 
 class ShowDevicePage extends StatefulWidget {
   final String deviceUid;
   final Device device;
+
+  final weekDays = const ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+  final List<double> yValues = const [1.3, 1, 1.8, 1.5, 2.2, 1.8, 3];
 
   const ShowDevicePage({
     Key? key,
@@ -51,8 +56,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   int selectedInterval = 5000; // milliseconds
 
   // Draw Live Line Chart
-  final Color sinColor = Colors.blueAccent;
-  final Color cosColor = Colors.orangeAccent;
+  final Color sinColor = Colors.orangeAccent;
+  final Color cosColor = Colors.blueAccent;
 
   final limitCount = 100;
   final sinPoints = <FlSpot>[];
@@ -61,16 +66,20 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   double xValue = 0;
   double step = 1; // original 0.05;
 
+  late double touchedValue;
+
   // _ShowDevicePageState(String deviceUid, Device device) {
   //   this.deviceUid = deviceUid;
   //   this.device = device;
   // }
+
 
   _ShowDevicePageState(this.deviceUid, this.device);
 
 
   @override
   void initState() {
+    touchedValue = -1;
     super.initState();
     // Load necessary cloud database
     // may be not use
@@ -84,6 +93,92 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     super.dispose();
     deviceDatabase.dispose();
   }
+
+  LineTouchData get lineTouchData1 => LineTouchData(
+    handleBuiltInTouches: true,
+    touchTooltipData: LineTouchTooltipData(
+      tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+
+      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+
+        return touchedBarSpots.map((barSpot) {
+          final flSpot = barSpot;
+          // if (flSpot.x == 0 || flSpot.x == 6) {
+          //   return null;
+          // }
+          if (flSpot.x == 0) {
+            return null;
+          }
+
+          TextAlign textAlign;
+          switch (flSpot.x.toInt()) {
+            case 1:
+              textAlign = TextAlign.left;
+              break;
+            case 5:
+              textAlign = TextAlign.right;
+              break;
+            default:
+              textAlign = TextAlign.center;
+          }
+
+          return LineTooltipItem(
+            // '${widget.weekDays[flSpot.x.toInt()]} \n',
+            '${flSpot.y.toString()}',
+            const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            // children: [
+            //   TextSpan(
+            //     text: flSpot.y.toString(),
+            //     style: TextStyle(
+            //       color: Colors.grey[100],
+            //       fontWeight: FontWeight.normal,
+            //     ),
+            //   ),
+            //   const TextSpan(
+            //     text: ' k ',
+            //     style: TextStyle(
+            //       fontStyle: FontStyle.italic,
+            //       fontWeight: FontWeight.normal,
+            //     ),
+            //   ),
+            //   const TextSpan(
+            //     text: 'calories',
+            //     style: TextStyle(
+            //       fontWeight: FontWeight.normal,
+            //     ),
+            //   ),
+            // ],
+            textAlign: textAlign,
+          );
+        }).toList();
+      }),
+      // touchCallback:
+      //     (FlTouchEvent event, LineTouchResponse? lineTouch) {
+      //   if (!event.isInterestedForInteractions ||
+      //       lineTouch == null ||
+      //       lineTouch.lineBarSpots == null) {
+      //     setState(() {
+      //       touchedValue = -1;
+      //     });
+      //     return;
+      //   }
+      //   final value = lineTouch.lineBarSpots![0].x;
+      //
+      //   if (value == 0 || value == 6) {
+      //     setState(() {
+      //       touchedValue = -1;
+      //     });
+      //     return;
+      //   }
+      //
+      //   setState(() {
+      //     touchedValue = value;
+      //   });
+      // }
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +213,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               sinPoints.add(FlSpot(xValue, weatherHistory.weatherData.temperature));
               cosPoints.add(FlSpot(xValue, weatherHistory.weatherData.humidity));
 
+            print('sinPoints[sinPoints.length-1].x=${sinPoints[sinPoints.length-1].x}');
+            print('sinPoints[sinPoints.length-1].y=${sinPoints[sinPoints.length-1].y}');
             print('sinPoints.length=${sinPoints.length}');
             xValue += step;
 
@@ -128,7 +225,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               body: SingleChildScrollView(
                 child: Column(
                   children: [
-                    SizedBox(height: 50,),
+                    SizedBox(height: 12,),
                     Center(
                       child: Container(
                         width: 200,
@@ -208,7 +305,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                         ),
                       ),
                     ),
-                    SizedBox(height: 50,),
+                    SizedBox(height: 12,),
                     Center(
                       child: Container(
                         child: Text('Device ${device.name ?? device.uid} Detail'),
@@ -227,49 +324,103 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                       ),
                     ),
                     buildReadingIntervalCard(context),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        left: 28,
-                        right: 28,
-                      ),
-                      // child: LineChartSample10(),
-                      child: SizedBox(
-                        width: 150,
-                        height: 150,
-                        child: LineChart(
-                          LineChartData(
-                            minY: 0,
-                            maxY: 80,
-                            minX: sinPoints.first.x,
-                            maxX: sinPoints.last.x,
-                            lineTouchData: LineTouchData(enabled: false),
-                            clipData: FlClipData.all(),
-                            gridData: FlGridData(
-                              show: true,
-                              drawVerticalLine: false,
-                            ),
-                            lineBarsData: [
-                              sinLine(sinPoints),
-                              cosLine(cosPoints),
-                            ],
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-
-                                  reservedSize: 38,
+                    SizedBox(height: 8,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: 28,
+                            right: 28,
+                          ),
+                          // child: LineChartSample10(),
+                          child: SizedBox(
+                            width: 150,
+                            height: 150,
+                            child: LineChart(
+                              LineChartData(
+                                borderData: FlBorderData(
+                                    show: true,
+                                    border: Border.all(color: const Color(0xff37434d), width: 1)),
+                                minY: 0,
+                                maxY: 100,
+                                minX: sinPoints.first.x,
+                                maxX: sinPoints.last.x,
+                                // lineTouchData: LineTouchData(enabled: true),
+                                lineTouchData: lineTouchData1,
+                                clipData: FlClipData.all(),
+                                // gridData: FlGridData(
+                                //   show: true,
+                                //   drawVerticalLine: false,
+                                // ),
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawVerticalLine: true,
+                                  horizontalInterval: 10,
+                                  verticalInterval: 10,
+                                  getDrawingHorizontalLine: (value) {
+                                    return FlLine(
+                                      color: const Color(0xffb9c4c9),
+                                      strokeWidth: 0.5,
+                                    );
+                                  },
+                                  getDrawingVerticalLine: (value) {
+                                    return FlLine(
+                                      color: const Color(0xffb9c4c9),
+                                      strokeWidth: 0.5,
+                                    );
+                                  },
                                 ),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: false,
+                                lineBarsData: [
+                                  sinLine(sinPoints),
+                                  cosLine(cosPoints),
+                                ],
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+
+                                      reservedSize: 38,
+                                    ),
+                                  ),
+                                  rightTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: false,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                        Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const <Widget>[
+                            Indicator(
+                              color: Colors.orangeAccent,
+                              text: 'Temperature',
+                              isSquare: true,
+                            ),
+                            SizedBox(
+                              height: 4,
+                            ),
+                            Indicator(
+                              color: Colors.blueAccent,
+                              text: 'Humidity',
+                              isSquare: true,
+                            ),
+                            SizedBox(
+                              height: 18,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
+
+
                   ],
                 ),
               ),
@@ -304,6 +455,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
           stops: const [0.1, 1.0]),
       barWidth: 4,
       isCurved: false,
+      // isStrokeCapRound: true,
     );
   }
 
