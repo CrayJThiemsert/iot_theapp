@@ -56,12 +56,13 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   int selectedInterval = 5000; // milliseconds
 
   // Draw Live Line Chart
-  final Color sinColor = Colors.orangeAccent;
-  final Color cosColor = Colors.blueAccent;
+  final Color tempColor = Colors.orangeAccent;
+  final Color humidColor = Colors.blueAccent;
 
   final limitCount = 100;
-  final sinPoints = <FlSpot>[];
-  final cosPoints = <FlSpot>[];
+  final tempPoints = <FlSpot>[];
+  final humidPoints = <FlSpot>[];
+  List<String> dateTimeValues = <String>[];
 
   double xValue = 0;
   double step = 1; // original 0.05;
@@ -81,6 +82,20 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   void initState() {
     touchedValue = -1;
     super.initState();
+
+    // --------------------
+    tempPoints.add(FlSpot(xValue, 0));
+    humidPoints.add(FlSpot(xValue, 0));
+    dateTimeValues.add('_');
+    print('init state');
+    print('tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length-1].x}');
+    print('tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length-1].y}');
+    print('dateTimeValues[dateTimeValues.length-1]=${dateTimeValues[dateTimeValues.length-1]}');
+    print('tempPoints.length=${tempPoints.length}');
+    print('dateTimeValues.length=${dateTimeValues.length}');
+    xValue += step;
+    // --------------------
+
     // Load necessary cloud database
     // may be not use
     deviceDatabase = DeviceDatabase(device: device, user: user);
@@ -100,8 +115,12 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
 
       getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+        print('touchedBarSpots.length=${touchedBarSpots.length}');
+        print('touchedBarSpots.toString=${touchedBarSpots.toString()}');
 
         return touchedBarSpots.map((barSpot) {
+          print('barSpot.barIndex=${barSpot.barIndex}');
+          print('barSpot.spotIndex=${barSpot.spotIndex}');
           final flSpot = barSpot;
           // if (flSpot.x == 0 || flSpot.x == 6) {
           //   return null;
@@ -110,47 +129,55 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             return null;
           }
 
-          TextAlign textAlign;
-          switch (flSpot.x.toInt()) {
-            case 1:
-              textAlign = TextAlign.left;
-              break;
-            case 5:
-              textAlign = TextAlign.right;
-              break;
-            default:
-              textAlign = TextAlign.center;
+
+          // TextAlign textAlign;
+          // switch (flSpot.x.toInt()) {
+          //   case 1:
+          //     textAlign = TextAlign.left;
+          //     break;
+          //   case 5:
+          //     textAlign = TextAlign.right;
+          //     break;
+          //   default:
+          //     textAlign = TextAlign.center;
+          // }
+          TextAlign textAlign = TextAlign.center;
+          String dateTimeString = '';
+          if(barSpot.barIndex == 1) {
+            dateTimeString = '${dateTimeValues[flSpot.x.toInt()].toString()}\n';
           }
+          print('dateTimeString=${dateTimeString}');
 
           return LineTooltipItem(
             // '${widget.weekDays[flSpot.x.toInt()]} \n',
-            '${flSpot.y.toString()}',
+            // '${dateTimeString}${flSpot.y.toString()}',
+            '${dateTimeString}',
             const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
-            // children: [
-            //   TextSpan(
-            //     text: flSpot.y.toString(),
-            //     style: TextStyle(
-            //       color: Colors.grey[100],
-            //       fontWeight: FontWeight.normal,
-            //     ),
-            //   ),
-            //   const TextSpan(
-            //     text: ' k ',
-            //     style: TextStyle(
-            //       fontStyle: FontStyle.italic,
-            //       fontWeight: FontWeight.normal,
-            //     ),
-            //   ),
-            //   const TextSpan(
-            //     text: 'calories',
-            //     style: TextStyle(
-            //       fontWeight: FontWeight.normal,
-            //     ),
-            //   ),
-            // ],
+            children: [
+              TextSpan(
+                text: flSpot.y.toString(),
+                style: TextStyle(
+                  color: Colors.grey[100],
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              // const TextSpan(
+              //   text: ' k ',
+              //   style: TextStyle(
+              //     fontStyle: FontStyle.italic,
+              //     fontWeight: FontWeight.normal,
+              //   ),
+              // ),
+              // const TextSpan(
+              //   text: 'calories',
+              //   style: TextStyle(
+              //     fontWeight: FontWeight.normal,
+              //   ),
+              // ),
+            ],
             textAlign: textAlign,
           );
         }).toList();
@@ -203,19 +230,20 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             // var weatherHistory = WeatherHistory.fromSnapshot(snap.data.snapshot);
 
             // Prepare value to draw live line chart
-            while (sinPoints.length > limitCount) {
-              sinPoints.removeAt(0);
-              cosPoints.removeAt(0);
+            while (tempPoints.length > limitCount) {
+              tempPoints.removeAt(0);
+              humidPoints.removeAt(0);
             }
             // used to be setState
             print('xValue=${xValue}, weatherHistory.temperature=${weatherHistory.weatherData.temperature}|${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}');
             print('xValue=${xValue}, weatherHistory.humidity=${weatherHistory.weatherData.humidity}');
-              sinPoints.add(FlSpot(xValue, weatherHistory.weatherData.temperature));
-              cosPoints.add(FlSpot(xValue, weatherHistory.weatherData.humidity));
+              tempPoints.add(FlSpot(xValue, weatherHistory.weatherData.temperature));
+              humidPoints.add(FlSpot(xValue, weatherHistory.weatherData.humidity));
+            dateTimeValues.add(weatherHistory.weatherData.uid);
 
-            print('sinPoints[sinPoints.length-1].x=${sinPoints[sinPoints.length-1].x}');
-            print('sinPoints[sinPoints.length-1].y=${sinPoints[sinPoints.length-1].y}');
-            print('sinPoints.length=${sinPoints.length}');
+            print('tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length-1].x}');
+            print('tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length-1].y}');
+            print('tempPoints.length=${tempPoints.length}');
             xValue += step;
 
             return Scaffold(
@@ -344,8 +372,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                                     border: Border.all(color: const Color(0xff37434d), width: 1)),
                                 minY: 0,
                                 maxY: 100,
-                                minX: sinPoints.first.x,
-                                maxX: sinPoints.last.x,
+                                minX: tempPoints.first.x,
+                                maxX: tempPoints.last.x,
                                 // lineTouchData: LineTouchData(enabled: true),
                                 lineTouchData: lineTouchData1,
                                 clipData: FlClipData.all(),
@@ -372,8 +400,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                                   },
                                 ),
                                 lineBarsData: [
-                                  sinLine(sinPoints),
-                                  cosLine(cosPoints),
+                                  tempLine(tempPoints),
+                                  humidLine(humidPoints),
                                 ],
                                 titlesData: FlTitlesData(
                                   show: true,
@@ -442,14 +470,14 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
         });
   }
 
-  LineChartBarData sinLine(List<FlSpot> points) {
+  LineChartBarData tempLine(List<FlSpot> points) {
     return LineChartBarData(
       spots: points,
       dotData: FlDotData(
         show: false,
       ),
       gradient: LinearGradient(
-          colors: [sinColor.withOpacity(0), sinColor],
+          colors: [tempColor.withOpacity(0), tempColor],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           stops: const [0.1, 1.0]),
@@ -459,14 +487,14 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     );
   }
 
-  LineChartBarData cosLine(List<FlSpot> points) {
+  LineChartBarData humidLine(List<FlSpot> points) {
     return LineChartBarData(
       spots: points,
       dotData: FlDotData(
         show: false,
       ),
       gradient: LinearGradient(
-          colors: [cosColor.withOpacity(0), cosColor],
+          colors: [humidColor.withOpacity(0), humidColor],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           stops: const [0.1, 1.0]),
