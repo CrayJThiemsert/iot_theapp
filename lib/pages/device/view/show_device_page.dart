@@ -1,16 +1,19 @@
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_theapp/pages/device/database/device_database.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
 import 'package:iot_theapp/pages/device/view/line_chart_live.dart';
+import 'package:iot_theapp/pages/device/view/utils.dart';
 import 'package:iot_theapp/pages/user/model/user.dart';
 import 'package:iot_theapp/utils/constants.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:iot_theapp/globals.dart' as globals;
+import 'package:validators/validators.dart';
 
 import '../../../line_chart_sample10.dart';
 import 'indicator.dart';
@@ -74,6 +77,124 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   //   this.device = device;
   // }
 
+  // Notification Settings
+  // Create a global key that uniquely identifies the Form widget
+  // and allows validation of the form.
+  //
+  // Note: This is a `GlobalKey<FormState>`,
+  // not a GlobalKey<MyCustomFormState>.
+  final _emailFormKey = GlobalKey<FormState>();
+
+  late TextEditingController name_controller;
+  String name = '';
+  // static List<String> pickerValues = ['0', '1',];
+  static List<String> pickerValues = [
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59',
+    '60',
+    '61',
+    '62',
+    '63',
+    '64',
+    '65',
+    '66',
+    '67',
+    '68',
+    '69',
+    '70',
+    '71',
+    '72',
+    '73',
+    '74',
+    '75',
+    '76',
+    '77',
+    '78',
+    '79',
+    '80',
+    '81',
+    '82',
+    '83',
+    '84',
+    '85',
+    '86',
+    '87',
+    '88',
+    '89',
+    '90',
+    '91',
+    '92',
+    '93',
+    '94',
+    '95',
+    '96',
+    '97',
+    '98',
+    '99',
+    '100',
+
+  ];
+  int selectedIndex = 0;
+  // Color color = Colors.black45;
+  // bool isSelected = false;
 
   _ShowDevicePageState(this.deviceUid, this.device);
 
@@ -81,6 +202,12 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   @override
   void initState() {
     touchedValue = -1;
+
+    // for(int i=0; i < 100;i++) {
+    //   pickerValues[i] = i.toString();
+    // }
+    // print('pickerValues.length=${pickerValues.length}');
+
     super.initState();
 
     // --------------------
@@ -100,11 +227,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // may be not use
     deviceDatabase = DeviceDatabase(device: device, user: user);
     // deviceDatabase.initState();
+
+    name_controller = TextEditingController();
+
+
   }
 
   @override
   void dispose() {
     // Dispose database.
+    name_controller.dispose();
     super.dispose();
     deviceDatabase.dispose();
   }
@@ -336,19 +468,45 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                     SizedBox(height: 12,),
                     Center(
                       child: Container(
-                        child: Text('Device ${device.name ?? device.uid} Detail'),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('Device ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                            Text('${device.name ?? device.uid}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                            Text(' Detail', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                          ],
+                        ),
                       ),
                     ),
                     Center(
                       child: Container(
-                        child: Text('latest when ${weatherHistory?.weatherData?.uid ?? 'no data'}'),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('latest when ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                            Text('${weatherHistory?.weatherData?.uid ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                          ],
+                        ),
                       ),
                     ),
                     Center(
                       child: Container(
                         // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
                         // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
-                        child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage ?? 'no data'} volts'),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text('battery voltage ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                            Text('${weatherHistory?.weatherData?.readVoltage ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                            Text(' volts', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                          ],
+                        ),
                       ),
                     ),
                     buildReadingIntervalCard(context),
@@ -448,6 +606,120 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                       ],
                     ),
 
+                    // Notification setting
+                    SizedBox(height: 8,),
+                    TextButton(
+                      child: Text('Notification'),
+                      style: TextButton.styleFrom(
+                        primary: Colors.black54,
+                        backgroundColor: Colors.white70,
+                        onSurface: Colors.grey,
+                        textStyle: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 16,
+                          fontStyle: FontStyle.normal,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        shadowColor: Colors.limeAccent,
+                        elevation: 5,
+                      ),
+
+                      // style: ButtonStyle(
+                      //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                      //           (Set<MaterialState> states) {
+                      //         if (states.contains(MaterialState.disabled))
+                      //           return Colors.black54;
+                      //         return null; // Defer to the widget's default.
+                      //       }),
+                      //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                      //           (Set<MaterialState> states) {
+                      //         if (states.contains(MaterialState.focused))
+                      //           return Colors.red;
+                      //         if (states.contains(MaterialState.hovered))
+                      //           return Colors.green;
+                      //         if (states.contains(MaterialState.pressed))
+                      //           return Colors.black54;
+                      //         return null; // Defer to the widget's default.
+                      //       }),
+                      // ),
+                      onPressed: () async {
+                        // final name = await openNotificationInputDialog();
+                        // if(name == null || name.isEmpty) return;
+                        //
+                        // setState(() {
+                        //   this.name = name;
+                        // });
+
+                        final deviceReturn = await openNotificationInputDialog();
+                        if(deviceReturn == null) return;
+
+                        setState(() {
+                          this.device.notifyTempLower = deviceReturn.notifyTempLower;
+                          this.device.notifyTempHigher = deviceReturn.notifyTempHigher;
+                          this.device.notifyHumidLower = deviceReturn.notifyHumidLower;
+                          this.device.notifyHumidHigher = deviceReturn.notifyHumidHigher;
+                          this.device.notifyEmail = deviceReturn.notifyEmail;
+                        });
+                      },
+
+                    ),
+                    SizedBox(height: 8,),
+                    // Notification display
+                    SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                          Text(
+                            this.device.notifyEmail,
+                            style: TextStyle( fontSize: 14, color: Colors.black87),
+                          ),
+                          SizedBox(height: 16,),
+                          Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                          // SizedBox(height: 8,),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              Text('${this.device.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                              Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              Text('${device.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                            ],
+                          ),
+                          SizedBox(height: 8,),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              Text('${device.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                              Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              Text('${device.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                            ],
+                          ),
+
+                          // buildCustomPicker(),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16,),
+                    // Row(
+                    //   children: [
+                    //     Expanded(
+                    //         child: Text(
+                    //           'Name: ',
+                    //           style: TextStyle(fontWeight: FontWeight.w600),
+                    //         ),
+                    //     ),
+                    //     const SizedBox(width: 12,),
+                    //     Text(device.notifyEmail),
+                    //   ],
+                    // )
 
                   ],
                 ),
@@ -906,10 +1178,49 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       throw Exception('Failed to do wifi settings');
     }
 
-
-
-
     return response;
+  }
+
+  /**
+   * "the Node" to save notification values
+   */
+  Future<void> updateNotificationSettings() async {
+    // update notification settings in cloud database
+    print('update notification settings in cloud database - users/${user.uid}/devices/${device.uid}');
+    var deviceRef = FirebaseDatabase.instance
+        .ref()
+        .child('users/${user.uid}/devices/${device.uid}')
+        .update({
+      // 'name':  device.name,
+      'notifyHumidLower': device.notifyHumidLower,
+      'notifyHumidHigher': device.notifyHumidHigher,
+      'notifyTempLower': device.notifyTempLower,
+      'notifyTempHigher': device.notifyTempHigher,
+      'notifyEmail': device.notifyEmail,
+    }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
+    .whenComplete(() {
+      print('updated notification settings success.');
+      showDialog(
+          context: context,
+          builder: (_) => CupertinoAlertDialog(
+            title: Text("Update Successfully"),
+            content: Text("Update notification settings is successfully."),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          barrierDismissible: false
+      );
+
+    });
+
+    return;
   }
 
   @override
@@ -1108,5 +1419,429 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     //   break;
     //
     // }
+  }
+
+  Future<Device?> openNotificationInputDialog() => showDialog<Device>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Notification')),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('will send to', style: TextStyle( fontSize: 16, color: Colors.black45),),
+              Form(
+                key: _emailFormKey,
+                child: TextFormField(
+                  keyboardType: TextInputType.emailAddress,
+                  // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
+                  validator: (value) {
+                    if(value == null || value.isEmpty) {
+                      return 'Please enter some text';
+                    } else {
+                      if(!isEmail(value!)) {
+                        return 'Invalid Email';
+                      }
+                      setState(() {
+                        this.device.notifyEmail = value;
+                      });
+
+                      return null;
+                    }
+                  },
+                  controller: TextEditingController(text: this.device.notifyEmail),
+                  autofocus: false,
+                  decoration: InputDecoration(
+                    // label: Text('Emailx'),
+                    labelText: 'Email:',
+                    hintText: 'Enter your email address',
+                  ),
+                  // controller: name_controller,
+                  // onChanged: (value) {
+                  //   setState(() {
+                  //     this.device.notifyEmail = value;
+                  //   });
+                  // },
+                  // onSubmitted: (_) => submitNotificationSettings(),
+                ),
+              ),
+              SizedBox(height: 16,),
+              Text('when', style: TextStyle( fontSize: 16, color: Colors.black45),),
+              SizedBox(height: 16,),
+              buildTemperatureNotifyDialog(),
+              SizedBox(height: 8,),
+              buildHumidityNotifyDialog(),
+
+              // buildCustomPicker(),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('CLOSE')
+          ),
+          TextButton(
+              // onPressed: submitNotificationSettings,
+            onPressed: () {
+              // Validate returns true if the form is valid, or false otherwise.
+              if (_emailFormKey.currentState!.validate()) {
+                // If the form is valid, display a snackbar. In the real world,
+                // you'd often call a server or save the information in a database.
+                updateNotificationSettings();
+
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(content: Text('Updated Data')),
+                // );
+
+              } else {
+                showDialog(
+                    context: context,
+                    builder: (_) => CupertinoAlertDialog(
+                      title: Text("Invalid Email"),
+                      content: Text("Please enter the correct email format.\ And submit again."),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: Text("OK"),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                    barrierDismissible: false
+                );
+              }
+
+            },
+            child: Text('SUBMIT')
+          ),
+        ],
+      ),
+
+  );
+
+  void submitNotificationSettings() {
+    // Navigator.of(context).pop(name_controller.text);
+    //
+    // name_controller.clear();
+
+  }
+
+  // Widget buildCustomPicker() => SizedBox(
+  //   height: 300,
+  //   child: CupertinoPicker(
+  //     itemExtent: 64,
+  //     diameterRatio: 0.7,
+  //     looping: true,
+  //     onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+  //     // selectionOverlay: Container(),
+  //     selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+  //       background: Colors.pink.withOpacity(0.12),
+  //     ),
+  //     children: Utils.modelBuilder<String>(
+  //       pickerValues,
+  //           (index, value) {
+  //         final isSelected = this.selectedIndex == index;
+  //         final color = isSelected ? Colors.pink : Colors.black;
+  //
+  //         return Center(
+  //           child: Text(
+  //             value,
+  //             style: TextStyle(color: color, fontSize: 24),
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   ),
+  // );
+
+
+  Widget buildTemperatureNumberPicker(int pickerType) => SizedBox(
+    height: 80,
+    width: 50,
+    child: CupertinoPicker(
+      // backgroundColor: Colors.limeAccent,
+      itemExtent: 48,
+      diameterRatio: 1.5,
+      looping: true,
+      useMagnifier: true,
+      magnification: 1.2,
+      scrollController: FixedExtentScrollController(initialItem: getInitScrollIndex(pickerType)) ,
+      // onSelectedItemChanged: (index) => setState(() => this.index = index),
+      // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+      onSelectedItemChanged: (index) => setState(() {
+        switch(pickerType) {
+          case Constants.TEMP_LOWER: {
+            this.device.notifyTempLower = double.parse(pickerValues[index].toString());
+            break;
+          }
+          case Constants.TEMP_HIGHER: {
+            this.device.notifyTempHigher = double.parse(pickerValues[index].toString());
+            break;
+          }
+          default: {
+            this.device.notifyTempLower = double.parse(pickerValues[index].toString());
+            break;
+          }
+        }
+
+
+      }),
+      // onSelectedItemChanged: (int index) => setState(() {
+      //   this.selectedIndex = index;
+      //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+      //   isSelected = this.selectedIndex == index;
+      //   print('isSelected=${isSelected}');
+      //
+      // }),
+      selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+        background: Colors.orangeAccent.withOpacity(0.10),
+      ),
+
+      children: Utils.modelBuilder<String> (
+        pickerValues,
+        (index, value) {
+          // final color = isSelected ? Colors.pink : Colors.black45;
+          // final isSelected = this.selectedIndex == index;
+          // final color = isSelected ? Colors.pink : Colors.black;
+          return Center(
+            child: Text(
+              value,
+              style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16),
+              // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+            ),
+          );
+        }
+      ),
+    ),
+  );
+
+  Widget buildHumidityNumberPicker(int pickerType) => SizedBox(
+    height: 80,
+    width: 50,
+    child: CupertinoPicker(
+      // backgroundColor: Colors.limeAccent,
+      itemExtent: 48,
+      diameterRatio: 1.5,
+      looping: true,
+      useMagnifier: true,
+      magnification: 1.2,
+      scrollController: FixedExtentScrollController(initialItem: getInitScrollIndex(pickerType)) ,
+      // onSelectedItemChanged: (index) => setState(() => this.index = index),
+      // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+      onSelectedItemChanged: (index) => setState(() {
+        switch(pickerType) {
+          case Constants.HUMID_LOWER: {
+            this.device.notifyHumidLower = double.parse(pickerValues[index].toString());
+            break;
+          }
+          case Constants.HUMID_HIGHER: {
+            this.device.notifyHumidHigher = double.parse(pickerValues[index].toString());
+            break;
+          }
+          default: {
+            this.device.notifyHumidHigher = double.parse(pickerValues[index].toString());
+            break;
+          }
+        }
+
+
+      }),
+      // onSelectedItemChanged: (int index) => setState(() {
+      //   this.selectedIndex = index;
+      //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+      //   isSelected = this.selectedIndex == index;
+      //   print('isSelected=${isSelected}');
+      //
+      // }),
+      selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+        background: Colors.lightBlue.withOpacity(0.10),
+      ),
+
+      children: Utils.modelBuilder<String> (
+          pickerValues,
+              (index, value) {
+            // final color = isSelected ? Colors.pink : Colors.black45;
+            // final isSelected = this.selectedIndex == index;
+            // final color = isSelected ? Colors.pink : Colors.black;
+            return Center(
+              child: Text(
+                value,
+                style: TextStyle(color: Colors.blue, fontSize: 16),
+                // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+              ),
+            );
+          }
+      ),
+    ),
+  );
+
+  Widget buildTemperatureNotifyDialog() => SizedBox(
+    height: 100,
+    child: Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(width: 50,),
+            Text('Lower than', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 20,),
+            Text('Higher than', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 4,),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('Temperature', style: TextStyle(color: Colors.black45),),
+            buildTemperatureNumberPicker(Constants.TEMP_LOWER),
+            Text('or', style: TextStyle(color: Colors.black45),),
+            buildTemperatureNumberPicker(Constants.TEMP_HIGHER),
+          ],
+        ),
+      ],
+    ),
+
+    // child: CupertinoPicker(
+    //   // backgroundColor: Colors.limeAccent,
+    //   itemExtent: 48,
+    //   diameterRatio: 1.5,
+    //   looping: true,
+    //   useMagnifier: true,
+    //   magnification: 1.2,
+    //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
+    //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+    //   // onSelectedItemChanged: (int index) => setState(() {
+    //   //   this.selectedIndex = index;
+    //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+    //   //   isSelected = this.selectedIndex == index;
+    //   //   print('isSelected=${isSelected}');
+    //   //
+    //   // }),
+    //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+    //     background: Colors.pink.withOpacity(0.10),
+    //   ),
+    //
+    //   children: Utils.modelBuilder<String> (
+    //       pickerValues,
+    //           (index, value) {
+    //         // final color = isSelected ? Colors.pink : Colors.black45;
+    //         // final isSelected = this.selectedIndex == index;
+    //         // final color = isSelected ? Colors.pink : Colors.black;
+    //         return Center(
+    //           child: Text(
+    //             value,
+    //             style: TextStyle(color: Colors.pink, fontSize: 16),
+    //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+    //           ),
+    //         );
+    //       }
+    //   ),
+    // ),
+  );
+
+  Widget buildHumidityNotifyDialog() => SizedBox(
+    height: 100,
+    child: Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(width: 50,),
+            Text('Lower than', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 20,),
+            Text('Higher than', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 4,),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('Humidity', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 10,),
+            buildHumidityNumberPicker(Constants.HUMID_LOWER),
+            Text('or', style: TextStyle(color: Colors.black45),),
+            buildHumidityNumberPicker(Constants.HUMID_HIGHER),
+          ],
+        ),
+      ],
+    ),
+
+    // child: CupertinoPicker(
+    //   // backgroundColor: Colors.limeAccent,
+    //   itemExtent: 48,
+    //   diameterRatio: 1.5,
+    //   looping: true,
+    //   useMagnifier: true,
+    //   magnification: 1.2,
+    //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
+    //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+    //   // onSelectedItemChanged: (int index) => setState(() {
+    //   //   this.selectedIndex = index;
+    //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+    //   //   isSelected = this.selectedIndex == index;
+    //   //   print('isSelected=${isSelected}');
+    //   //
+    //   // }),
+    //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+    //     background: Colors.pink.withOpacity(0.10),
+    //   ),
+    //
+    //   children: Utils.modelBuilder<String> (
+    //       pickerValues,
+    //           (index, value) {
+    //         // final color = isSelected ? Colors.pink : Colors.black45;
+    //         // final isSelected = this.selectedIndex == index;
+    //         // final color = isSelected ? Colors.pink : Colors.black;
+    //         return Center(
+    //           child: Text(
+    //             value,
+    //             style: TextStyle(color: Colors.pink, fontSize: 16),
+    //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+    //           ),
+    //         );
+    //       }
+    //   ),
+    // ),
+  );
+
+  int getInitScrollIndex(int pickerType) {
+    int index = 0;
+    switch(pickerType) {
+      case Constants.HUMID_LOWER: {
+        index = this.device.notifyHumidLower.toInt();
+        break;
+      }
+      case Constants.HUMID_HIGHER: {
+        index = this.device.notifyHumidHigher.toInt();
+        break;
+      }
+      case Constants.TEMP_LOWER: {
+        index = this.device.notifyTempLower.toInt();
+        break;
+      }
+      case Constants.TEMP_HIGHER: {
+        index = this.device.notifyTempHigher.toInt();
+        break;
+      }
+      default: {
+        index = 0;
+        break;
+      }
+    }
+    return index;
   }
 }

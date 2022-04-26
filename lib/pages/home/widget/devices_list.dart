@@ -17,7 +17,8 @@ class DevicesList extends StatefulWidget {
 }
 
 class _DevicesListState extends State<DevicesList> {
-  final dbRef = FirebaseDatabase.instance.reference().child("users/cray/devices");
+  // final dbRef = FirebaseDatabase.instance.reference().child("users/cray/devices");
+  final dbRef = FirebaseDatabase.instance.ref().child("users/cray/devices");
   // List<Map<dynamic, String>> lists = [];
   List<String> lists = [];
   List<Device> deviceLists = [];
@@ -51,6 +52,15 @@ class _DevicesListState extends State<DevicesList> {
                   humidity: globals.parseDouble(values['humidity']),
                   temperature: globals.parseDouble(values['temperature'] ?? 0),
                   readVoltage: globals.parseDouble(values['readVoltage'] ?? 0),
+
+                  notifyHumidLower: globals.parseDouble(values['notifyHumidLower'] ?? 0),
+                  notifyHumidHigher: globals.parseDouble(values['notifyHumidHigher'] ?? 0),
+                  notifyTempLower: globals.parseDouble(values['notifyTempLower'] ?? 0),
+                  notifyTempHigher: globals.parseDouble(values['notifyTempHigher'] ?? 0),
+                  notifyEmail: values['notifyEmail'] ?? '',
+
+                  deviceType: values['deviceType'] ?? '',
+
                 ));
               });
 

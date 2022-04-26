@@ -15,6 +15,15 @@ class Device extends Item{
   final double temperature;
   final double readVoltage;
   final String updatedWhen;
+
+  double notifyHumidLower;
+  double notifyHumidHigher;
+  double notifyTempLower;
+  double notifyTempHigher;
+  String notifyEmail;
+
+  final String deviceType;
+
   // List<Header> headers;
   // List<ItemData> itemDatas;
   // Topic topic;
@@ -31,6 +40,13 @@ class Device extends Item{
     double temperature = 0,
     double readVoltage = 0,
     String updatedWhen = '',
+
+    double notifyHumidLower = 0,
+    double notifyHumidHigher = 0,
+    double notifyTempLower = 0,
+    double notifyTempHigher = 0,
+    String notifyEmail = '',
+    String deviceType = '',
     // List<Header> headers,
     // List<ItemData> itemDatas,
     // Topic topic,
@@ -45,7 +61,14 @@ class Device extends Item{
       this.readVoltage = readVoltage ?? 0,
       this.id = id ?? '',
       this.uid = uid ?? '',
-      this.updatedWhen = updatedWhen ?? ''
+      this.updatedWhen = updatedWhen ?? '',
+
+      this.notifyHumidLower = notifyHumidLower ?? 0,
+      this.notifyHumidHigher = notifyHumidHigher ?? 0,
+      this.notifyTempLower = notifyTempLower ?? 0,
+      this.notifyTempHigher = notifyTempHigher ?? 0,
+      this.notifyEmail = notifyEmail ?? '',
+      this.deviceType = deviceType ?? ''
       // this.headers = headers,
       // this.itemDatas = itemDatas,
       // this.topic = topic
@@ -63,6 +86,15 @@ class Device extends Item{
     double? temperature,
     double? readVoltage,
     String? updatedWhen,
+
+    double? notifyHumidLower,
+    double? notifyHumidHigher,
+    double? notifyTempLower,
+    double? notifyTempHigher,
+
+    String? notifyEmail,
+    String? deviceType,
+
     // List<Header> headers,
     // List<ItemData> itemDatas,
     // Topic topic,
@@ -78,7 +110,15 @@ class Device extends Item{
       humidity: humidity ?? this.humidity,
       temperature: temperature ?? this.temperature,
       readVoltage: readVoltage ?? this.readVoltage,
-        updatedWhen: updatedWhen ?? this.updatedWhen,
+      updatedWhen: updatedWhen ?? this.updatedWhen,
+
+      notifyHumidLower: notifyHumidLower ?? this.notifyHumidLower,
+      notifyHumidHigher: notifyHumidHigher ?? this.notifyHumidHigher,
+      notifyTempLower: notifyTempLower ?? this.notifyTempLower,
+      notifyTempHigher: notifyTempHigher ?? this.notifyTempHigher,
+      notifyEmail: notifyEmail ?? this.notifyEmail,
+      deviceType: deviceType ?? this.deviceType,
+
       // headers: headers ?? this.headers,
       // itemDatas: itemDatas ?? this.itemDatas,
       // topic: topic ?? this.topic,
@@ -87,7 +127,23 @@ class Device extends Item{
 
   @override
   int get hashCode =>
-      id.hashCode ^ uid.hashCode ^ index.hashCode ^ name.hashCode ^ mode.hashCode ^ localip.hashCode ^ readingInterval.hashCode ^ humidity.hashCode ^ temperature.hashCode ^ readVoltage.hashCode ^ updatedWhen.hashCode;
+      id.hashCode ^
+      uid.hashCode ^
+      index.hashCode ^
+      name.hashCode ^
+      mode.hashCode ^
+      localip.hashCode ^
+      readingInterval.hashCode ^
+      humidity.hashCode ^
+      temperature.hashCode ^
+      readVoltage.hashCode ^
+      updatedWhen.hashCode ^
+      notifyHumidLower.hashCode ^
+      notifyHumidHigher.hashCode ^
+      notifyTempLower.hashCode ^
+      notifyTempHigher.hashCode ^
+      notifyEmail.hashCode ^
+      deviceType.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -105,6 +161,15 @@ class Device extends Item{
           temperature == other.temperature &&
           readVoltage == other.readVoltage &&
           updatedWhen == other.updatedWhen &&
+
+          notifyHumidLower == other.notifyHumidLower &&
+          notifyHumidHigher == other.notifyHumidHigher &&
+          notifyTempLower == other.notifyTempLower &&
+          notifyTempHigher == other.notifyTempHigher &&
+
+          notifyEmail == other.notifyEmail &&
+          deviceType == other.deviceType &&
+
           name == other.name; // &&
         // headers == other.headers &&
         // itemDatas == other.itemDatas &&
@@ -112,7 +177,7 @@ class Device extends Item{
 
   @override
   String toString() {
-    return 'Device { id: $id, uid: $uid, index: $index, name: $name, mode: $mode, localip: $localip, readingInterval: $readingInterval, humidity: $humidity, temperature: $temperature, readVoltage: $readVoltage, updatedWhen: $updatedWhen }'; //, headers: $headers, itemDatas: ${itemDatas}, topic: ${topic} }';
+    return 'Device { id: $id, uid: $uid, index: $index, name: $name, mode: $mode, localip: $localip, readingInterval: $readingInterval, humidity: $humidity, temperature: $temperature, readVoltage: $readVoltage, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail, deviceType: $deviceType}'; //, headers: $headers, itemDatas: ${itemDatas}, topic: ${topic} }';
   }
 
   ItemEntity toEntity() {

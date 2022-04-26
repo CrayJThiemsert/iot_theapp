@@ -25,6 +25,11 @@ class Constants extends InheritedWidget {
   static const INTERVAL_HOUR_3 = 10800000;
   static const INTERVAL_HOUR_4 = 14400000;
 
+  static const TEMP_LOWER = 1;
+  static const TEMP_HIGHER = 2;
+  static const HUMID_LOWER = 3;
+  static const HUMID_HIGHER = 4;
+
   // static const xx = TextStyle(
   //   color: Colors.white,
   //   fontFamily: 'Kanit',
