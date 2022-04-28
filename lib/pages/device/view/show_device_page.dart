@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_theapp/pages/device/database/device_database.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
+import 'package:iot_theapp/pages/device/model/notification.dart' as Notify;
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
 import 'package:iot_theapp/pages/device/view/line_chart_live.dart';
 import 'package:iot_theapp/pages/device/view/utils.dart';
@@ -38,6 +39,8 @@ class ShowDevicePage extends StatefulWidget {
 class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<ShowDevicePage> {
   String deviceUid = '';
   Device device = Device();
+  Notify.Notification notification = Notify.Notification();
+  Notify.Notification notificationDialog = Notify.Notification();
   User user = const User(uid: 'cray');
   late DeviceDatabase deviceDatabase;
 
@@ -209,6 +212,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // print('pickerValues.length=${pickerValues.length}');
 
     super.initState();
+    notification = Notify.Notification();
 
     // --------------------
     tempPoints.add(FlSpot(xValue, 0));
@@ -229,6 +233,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // deviceDatabase.initState();
 
     name_controller = TextEditingController();
+
+
 
 
   }
@@ -342,23 +348,27 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   @override
   Widget build(BuildContext context) {
 
-    var deviceRef = FirebaseDatabase.instance
+    var deviceHistoryRef = FirebaseDatabase.instance
         .ref()
         .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
         .orderByKey()
         .limitToLast(1);
+    var deviceNotificationRef = FirebaseDatabase.instance
+        .ref()
+        .child('users/${user.uid}/devices/${device.uid}/notification')
+        .orderByKey();
     // var deviceRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history/2021-03-31 01:32:01');
     final TextStyle? unitStyle = Theme.of(context).textTheme.headline2;
     final TextStyle? headlineStyle = Theme.of(context).textTheme.headline1;
 
     return StreamBuilder(
         // stream: deviceDatabase.getLatestHistory().onValue,
-        stream: deviceRef.onValue,
-        builder: (context, AsyncSnapshot<DatabaseEvent> snap) {
-          if (snap.hasData && !snap.hasError) {
-            print('=>${snap.data!.snapshot.value.toString()}');
+        stream: deviceHistoryRef.onValue,
+        builder: (context, AsyncSnapshot<DatabaseEvent> snapHistory) {
+          if (snapHistory.hasData && !snapHistory.hasError) {
+            print('=>${snapHistory.data!.snapshot.value.toString()}');
             var weatherHistory =
-                WeatherHistory.fromJson(snap.data!.snapshot.value as Map);
+                WeatherHistory.fromJson(snapHistory.data!.snapshot.value as Map);
             // var weatherHistory = WeatherHistory.fromSnapshot(snap.data.snapshot);
 
             // Prepare value to draw live line chart
@@ -378,352 +388,373 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             print('tempPoints.length=${tempPoints.length}');
             xValue += step;
 
-            return Scaffold(
-              appBar: AppBar(
-                title: Text('${device.name ?? device.uid} Detail'),
-              ),
-              body: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: 12,),
-                    Center(
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: new BoxDecoration(
-                          color: Colors.lightGreen.shade800,
-                          border: Border.all(color: Colors.green.shade400, width: 8.0),
-                          borderRadius: new BorderRadius.all(Radius.circular(150.0)),
-                        ),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
+            return StreamBuilder(
+              stream: deviceNotificationRef.onValue,
+              builder: (context, AsyncSnapshot<DatabaseEvent> snapNotification) {
+                if (snapNotification.hasData && !snapNotification.hasError) {
+                  print('=>${snapNotification.data!.snapshot.value.toString()}');
+                  var notificationStream =
+                  Notify.Notification.fromJson(snapNotification.data!.snapshot.value as Map);
+
+                  // Stream Notification Data from cloud
+                  this.notification.notifyEmail = notificationStream.notifyEmail;
+                  this.notification.notifyTempHigher = notificationStream.notifyTempHigher;
+                  this.notification.notifyTempLower = notificationStream.notifyTempLower;
+                  this.notification.notifyHumidHigher = notificationStream.notifyHumidHigher;
+                  this.notification.notifyHumidLower = notificationStream.notifyHumidLower;
+
+                }
+                return Scaffold(
+                  appBar: AppBar(
+                    title: Text('${device.name ?? device.uid} Detail'),
+                  ),
+                  body: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 12,),
+                        Center(
+                          child: Container(
+                            width: 200,
+                            height: 200,
+                            decoration: new BoxDecoration(
+                              color: Colors.lightGreen.shade800,
+                              border: Border.all(color: Colors.green.shade400, width: 8.0),
+                              borderRadius: new BorderRadius.all(Radius.circular(150.0)),
+                            ),
+                            child: IntrinsicHeight(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(height: 50,),
-                                  Container(
-                                    child: Text(
-                                      '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
-                                      // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
-                                      style: headlineStyle,
-                                      // style: TextStyle(
-                                      //   color: Colors.white,
-                                      //   fontFamily: 'Kanit',
-                                      //   fontWeight: FontWeight.w300,
-                                      //   fontSize: 36.0,
-                                      // ),
-                                    ),
+                                  Column(
+                                    children: [
+                                      SizedBox(height: 50,),
+                                      Container(
+                                        child: Text(
+                                          '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
+                                          // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
+                                          style: headlineStyle,
+                                          // style: TextStyle(
+                                          //   color: Colors.white,
+                                          //   fontFamily: 'Kanit',
+                                          //   fontWeight: FontWeight.w300,
+                                          //   fontSize: 36.0,
+                                          // ),
+                                        ),
+                                      ),
+                                      Container(
+                                        child: Text(
+                                          'Temperature (\u2103)',
+                                          style: unitStyle,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Container(
-                                    child: Text(
-                                      'Temperature (\u2103)',
-                                      style: unitStyle,
-                                    ),
+                                  VerticalDivider(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    thickness: 2,
+                                    // width: 10,
+                                    indent: 10,
+                                    endIndent: 10,
+                                  ),
+
+                                  Column(
+                                    children: [
+                                      SizedBox(height: 50,),
+                                      Container(
+                                        child: Text(
+                                          '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
+                                          style: headlineStyle,
+                                          // style: TextStyle(
+                                          //   color: Colors.white,
+                                          //   fontFamily: 'Kanit',
+                                          //   fontWeight: FontWeight.w300,
+                                          //   fontSize: 36.0,
+                                          // ),
+                                        ),
+                                      ),
+                                      Container(
+                                        child: Text(
+                                          'Humidity (%)',
+                                          style: unitStyle,
+                                          // style: TextStyle(
+                                          //   color: Colors.white,
+                                          //   fontFamily: 'Kanit',
+                                          //   fontWeight: FontWeight.w300,
+                                          //   fontSize: 12.0,
+                                          // ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              VerticalDivider(
-                                color: Colors.grey.withOpacity(0.2),
-                                thickness: 2,
-                                // width: 10,
-                                indent: 10,
-                                endIndent: 10,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 12,),
+                        Center(
+                          child: Container(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('Device ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                Text('${device.name ?? device.uid}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                Text(' Detail', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Container(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('latest when ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                Text('${weatherHistory?.weatherData?.uid ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: Container(
+                            // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
+                            // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text('battery voltage ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                Text('${weatherHistory?.weatherData?.readVoltage ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                Text(' volts', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              ],
+                            ),
+                          ),
+                        ),
+                        buildReadingIntervalCard(context),
+                        SizedBox(height: 8,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: 28,
+                                right: 28,
+                              ),
+                              // child: LineChartSample10(),
+                              child: SizedBox(
+                                width: 150,
+                                height: 150,
+                                child: LineChart(
+                                  LineChartData(
+                                    borderData: FlBorderData(
+                                        show: true,
+                                        border: Border.all(color: const Color(0xff37434d), width: 1)),
+                                    minY: 0,
+                                    maxY: 100,
+                                    minX: tempPoints.first.x,
+                                    maxX: tempPoints.last.x,
+                                    // lineTouchData: LineTouchData(enabled: true),
+                                    lineTouchData: lineTouchData1,
+                                    clipData: FlClipData.all(),
+                                    // gridData: FlGridData(
+                                    //   show: true,
+                                    //   drawVerticalLine: false,
+                                    // ),
+                                    gridData: FlGridData(
+                                      show: true,
+                                      drawVerticalLine: true,
+                                      horizontalInterval: 10,
+                                      verticalInterval: 10,
+                                      getDrawingHorizontalLine: (value) {
+                                        return FlLine(
+                                          color: const Color(0xffb9c4c9),
+                                          strokeWidth: 0.5,
+                                        );
+                                      },
+                                      getDrawingVerticalLine: (value) {
+                                        return FlLine(
+                                          color: const Color(0xffb9c4c9),
+                                          strokeWidth: 0.5,
+                                        );
+                                      },
+                                    ),
+                                    lineBarsData: [
+                                      tempLine(tempPoints),
+                                      humidLine(humidPoints),
+                                    ],
+                                    titlesData: FlTitlesData(
+                                      show: true,
+                                      leftTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+
+                                          reservedSize: 38,
+                                        ),
+                                      ),
+                                      rightTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: false,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const <Widget>[
+                                Indicator(
+                                  color: Colors.orangeAccent,
+                                  text: 'Temperature',
+                                  isSquare: true,
+                                ),
+                                SizedBox(
+                                  height: 4,
+                                ),
+                                Indicator(
+                                  color: Colors.blueAccent,
+                                  text: 'Humidity',
+                                  isSquare: true,
+                                ),
+                                SizedBox(
+                                  height: 18,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Notification setting
+                        SizedBox(height: 8,),
+                        TextButton(
+                          child: Text('Notification'),
+                          style: TextButton.styleFrom(
+                            primary: Colors.black54,
+                            backgroundColor: Colors.white70,
+                            onSurface: Colors.grey,
+                            textStyle: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16,
+                              fontStyle: FontStyle.normal,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            shadowColor: Colors.limeAccent,
+                            elevation: 5,
+                          ),
+
+                          // style: ButtonStyle(
+                          //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                          //           (Set<MaterialState> states) {
+                          //         if (states.contains(MaterialState.disabled))
+                          //           return Colors.black54;
+                          //         return null; // Defer to the widget's default.
+                          //       }),
+                          //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                          //           (Set<MaterialState> states) {
+                          //         if (states.contains(MaterialState.focused))
+                          //           return Colors.red;
+                          //         if (states.contains(MaterialState.hovered))
+                          //           return Colors.green;
+                          //         if (states.contains(MaterialState.pressed))
+                          //           return Colors.black54;
+                          //         return null; // Defer to the widget's default.
+                          //       }),
+                          // ),
+                          onPressed: () async {
+                            // final name = await openNotificationInputDialog();
+                            // if(name == null || name.isEmpty) return;
+                            //
+                            // setState(() {
+                            //   this.name = name;
+                            // });
+
+                            // // Prepare notification values before edit them on dialog.
+                            // this.notificationDialog = this.notification;
+
+                            final deviceReturn = await openNotificationInputDialog();
+                            if(deviceReturn == null) return;
+
+                            setState(() {
+                              this.notification.notifyTempLower = deviceReturn.notifyTempLower;
+                              this.notification.notifyTempHigher = deviceReturn.notifyTempHigher;
+                              this.notification.notifyHumidLower = deviceReturn.notifyHumidLower;
+                              this.notification.notifyHumidHigher = deviceReturn.notifyHumidHigher;
+                              this.notification.notifyEmail = deviceReturn.notifyEmail;
+                            });
+                          },
+
+                        ),
+                        SizedBox(height: 8,),
+                        // Notification display
+                        SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              Text(
+                                this.notification.notifyEmail,
+                                style: TextStyle( fontSize: 14, color: Colors.black87),
+                              ),
+                              SizedBox(height: 16,),
+                              Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                              // SizedBox(height: 8,),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                  Text('${this.notification.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                  Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                  Text('${this.notification.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                ],
+                              ),
+                              SizedBox(height: 8,),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                  Text('${this.notification.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                  Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                                  Text('${this.notification.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                                ],
                               ),
 
-                              Column(
-                                children: [
-                                  SizedBox(height: 50,),
-                                  Container(
-                                    child: Text(
-                                      '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
-                                      style: headlineStyle,
-                                      // style: TextStyle(
-                                      //   color: Colors.white,
-                                      //   fontFamily: 'Kanit',
-                                      //   fontWeight: FontWeight.w300,
-                                      //   fontSize: 36.0,
-                                      // ),
-                                    ),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                      'Humidity (%)',
-                                      style: unitStyle,
-                                      // style: TextStyle(
-                                      //   color: Colors.white,
-                                      //   fontFamily: 'Kanit',
-                                      //   fontWeight: FontWeight.w300,
-                                      //   fontSize: 12.0,
-                                      // ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              // buildCustomPicker(),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 12,),
-                    Center(
-                      child: Container(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('Device ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                            Text('${device.name ?? device.uid}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                            Text(' Detail', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Container(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('latest when ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                            Text('${weatherHistory?.weatherData?.uid ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Container(
-                        // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
-                        // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text('battery voltage ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                            Text('${weatherHistory?.weatherData?.readVoltage ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                            Text(' volts', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                          ],
-                        ),
-                      ),
-                    ),
-                    buildReadingIntervalCard(context),
-                    SizedBox(height: 8,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(
-                            left: 28,
-                            right: 28,
-                          ),
-                          // child: LineChartSample10(),
-                          child: SizedBox(
-                            width: 150,
-                            height: 150,
-                            child: LineChart(
-                              LineChartData(
-                                borderData: FlBorderData(
-                                    show: true,
-                                    border: Border.all(color: const Color(0xff37434d), width: 1)),
-                                minY: 0,
-                                maxY: 100,
-                                minX: tempPoints.first.x,
-                                maxX: tempPoints.last.x,
-                                // lineTouchData: LineTouchData(enabled: true),
-                                lineTouchData: lineTouchData1,
-                                clipData: FlClipData.all(),
-                                // gridData: FlGridData(
-                                //   show: true,
-                                //   drawVerticalLine: false,
-                                // ),
-                                gridData: FlGridData(
-                                  show: true,
-                                  drawVerticalLine: true,
-                                  horizontalInterval: 10,
-                                  verticalInterval: 10,
-                                  getDrawingHorizontalLine: (value) {
-                                    return FlLine(
-                                      color: const Color(0xffb9c4c9),
-                                      strokeWidth: 0.5,
-                                    );
-                                  },
-                                  getDrawingVerticalLine: (value) {
-                                    return FlLine(
-                                      color: const Color(0xffb9c4c9),
-                                      strokeWidth: 0.5,
-                                    );
-                                  },
-                                ),
-                                lineBarsData: [
-                                  tempLine(tempPoints),
-                                  humidLine(humidPoints),
-                                ],
-                                titlesData: FlTitlesData(
-                                  show: true,
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
+                        SizedBox(height: 16,),
+                        // Row(
+                        //   children: [
+                        //     Expanded(
+                        //         child: Text(
+                        //           'Name: ',
+                        //           style: TextStyle(fontWeight: FontWeight.w600),
+                        //         ),
+                        //     ),
+                        //     const SizedBox(width: 12,),
+                        //     Text(device.notifyEmail),
+                        //   ],
+                        // )
 
-                                      reservedSize: 38,
-                                    ),
-                                  ),
-                                  rightTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: false,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const <Widget>[
-                            Indicator(
-                              color: Colors.orangeAccent,
-                              text: 'Temperature',
-                              isSquare: true,
-                            ),
-                            SizedBox(
-                              height: 4,
-                            ),
-                            Indicator(
-                              color: Colors.blueAccent,
-                              text: 'Humidity',
-                              isSquare: true,
-                            ),
-                            SizedBox(
-                              height: 18,
-                            ),
-                          ],
-                        ),
                       ],
                     ),
-
-                    // Notification setting
-                    SizedBox(height: 8,),
-                    TextButton(
-                      child: Text('Notification'),
-                      style: TextButton.styleFrom(
-                        primary: Colors.black54,
-                        backgroundColor: Colors.white70,
-                        onSurface: Colors.grey,
-                        textStyle: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 16,
-                          fontStyle: FontStyle.normal,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        shadowColor: Colors.limeAccent,
-                        elevation: 5,
-                      ),
-
-                      // style: ButtonStyle(
-                      //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                      //           (Set<MaterialState> states) {
-                      //         if (states.contains(MaterialState.disabled))
-                      //           return Colors.black54;
-                      //         return null; // Defer to the widget's default.
-                      //       }),
-                      //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                      //           (Set<MaterialState> states) {
-                      //         if (states.contains(MaterialState.focused))
-                      //           return Colors.red;
-                      //         if (states.contains(MaterialState.hovered))
-                      //           return Colors.green;
-                      //         if (states.contains(MaterialState.pressed))
-                      //           return Colors.black54;
-                      //         return null; // Defer to the widget's default.
-                      //       }),
-                      // ),
-                      onPressed: () async {
-                        // final name = await openNotificationInputDialog();
-                        // if(name == null || name.isEmpty) return;
-                        //
-                        // setState(() {
-                        //   this.name = name;
-                        // });
-
-                        final deviceReturn = await openNotificationInputDialog();
-                        if(deviceReturn == null) return;
-
-                        setState(() {
-                          this.device.notifyTempLower = deviceReturn.notifyTempLower;
-                          this.device.notifyTempHigher = deviceReturn.notifyTempHigher;
-                          this.device.notifyHumidLower = deviceReturn.notifyHumidLower;
-                          this.device.notifyHumidHigher = deviceReturn.notifyHumidHigher;
-                          this.device.notifyEmail = deviceReturn.notifyEmail;
-                        });
-                      },
-
-                    ),
-                    SizedBox(height: 8,),
-                    // Notification display
-                    SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                          Text(
-                            this.device.notifyEmail,
-                            style: TextStyle( fontSize: 14, color: Colors.black87),
-                          ),
-                          SizedBox(height: 16,),
-                          Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                          // SizedBox(height: 8,),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              Text('${this.device.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                              Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              Text('${device.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                            ],
-                          ),
-                          SizedBox(height: 8,),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              Text('${device.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                              Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              Text('${device.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                            ],
-                          ),
-
-                          // buildCustomPicker(),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16,),
-                    // Row(
-                    //   children: [
-                    //     Expanded(
-                    //         child: Text(
-                    //           'Name: ',
-                    //           style: TextStyle(fontWeight: FontWeight.w600),
-                    //         ),
-                    //     ),
-                    //     const SizedBox(width: 12,),
-                    //     Text(device.notifyEmail),
-                    //   ],
-                    // )
-
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }
             );
           } else {
             return Scaffold(
@@ -1186,17 +1217,17 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
    */
   Future<void> updateNotificationSettings() async {
     // update notification settings in cloud database
-    print('update notification settings in cloud database - users/${user.uid}/devices/${device.uid}');
+    print('update notification settings in cloud database - users/${user.uid}/devices/${device.uid}/notification');
     var deviceRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}')
+        .child('users/${user.uid}/devices/${device.uid}/notification')
         .update({
       // 'name':  device.name,
-      'notifyHumidLower': device.notifyHumidLower,
-      'notifyHumidHigher': device.notifyHumidHigher,
-      'notifyTempLower': device.notifyTempLower,
-      'notifyTempHigher': device.notifyTempHigher,
-      'notifyEmail': device.notifyEmail,
+      'notifyHumidLower': (this.notificationDialog.notifyHumidLower == 0) ? this.notification.notifyHumidLower : this.notificationDialog.notifyHumidLower,
+      'notifyHumidHigher': (this.notificationDialog.notifyHumidHigher == 0) ? this.notification.notifyHumidHigher : this.notificationDialog.notifyHumidHigher,
+      'notifyTempLower': (this.notificationDialog.notifyTempLower == 0) ? this.notification.notifyTempLower : this.notificationDialog.notifyTempLower,
+      'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0) ? this.notification.notifyTempHigher : this.notificationDialog.notifyTempHigher,
+      'notifyEmail': this.notificationDialog.notifyEmail,
     }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
     .whenComplete(() {
       print('updated notification settings success.');
@@ -1435,6 +1466,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               Form(
                 key: _emailFormKey,
                 child: TextFormField(
+                  initialValue: this.notification.notifyEmail,
                   keyboardType: TextInputType.emailAddress,
                   // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
                   validator: (value) {
@@ -1445,13 +1477,13 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                         return 'Invalid Email';
                       }
                       setState(() {
-                        this.device.notifyEmail = value;
+                        this.notificationDialog.notifyEmail = value;
                       });
 
                       return null;
                     }
                   },
-                  controller: TextEditingController(text: this.device.notifyEmail),
+                  // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
                   autofocus: false,
                   decoration: InputDecoration(
                     // label: Text('Emailx'),
@@ -1571,21 +1603,21 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       looping: true,
       useMagnifier: true,
       magnification: 1.2,
-      scrollController: FixedExtentScrollController(initialItem: getInitScrollIndex(pickerType)) ,
+      scrollController: FixedExtentScrollController(initialItem: initScrollIndex(pickerType)) ,
       // onSelectedItemChanged: (index) => setState(() => this.index = index),
       // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
       onSelectedItemChanged: (index) => setState(() {
         switch(pickerType) {
           case Constants.TEMP_LOWER: {
-            this.device.notifyTempLower = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyTempLower = double.parse(pickerValues[index].toString());
             break;
           }
           case Constants.TEMP_HIGHER: {
-            this.device.notifyTempHigher = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyTempHigher = double.parse(pickerValues[index].toString());
             break;
           }
           default: {
-            this.device.notifyTempLower = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyTempLower = double.parse(pickerValues[index].toString());
             break;
           }
         }
@@ -1631,21 +1663,21 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       looping: true,
       useMagnifier: true,
       magnification: 1.2,
-      scrollController: FixedExtentScrollController(initialItem: getInitScrollIndex(pickerType)) ,
+      scrollController: FixedExtentScrollController(initialItem: initScrollIndex(pickerType)) ,
       // onSelectedItemChanged: (index) => setState(() => this.index = index),
       // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
       onSelectedItemChanged: (index) => setState(() {
         switch(pickerType) {
           case Constants.HUMID_LOWER: {
-            this.device.notifyHumidLower = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyHumidLower = double.parse(pickerValues[index].toString());
             break;
           }
           case Constants.HUMID_HIGHER: {
-            this.device.notifyHumidHigher = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyHumidHigher = double.parse(pickerValues[index].toString());
             break;
           }
           default: {
-            this.device.notifyHumidHigher = double.parse(pickerValues[index].toString());
+            this.notificationDialog.notifyHumidHigher = double.parse(pickerValues[index].toString());
             break;
           }
         }
@@ -1818,23 +1850,23 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // ),
   );
 
-  int getInitScrollIndex(int pickerType) {
+  int initScrollIndex(int pickerType) {
     int index = 0;
     switch(pickerType) {
       case Constants.HUMID_LOWER: {
-        index = this.device.notifyHumidLower.toInt();
+        index = this.notification.notifyHumidLower.toInt();
         break;
       }
       case Constants.HUMID_HIGHER: {
-        index = this.device.notifyHumidHigher.toInt();
+        index = this.notification.notifyHumidHigher.toInt();
         break;
       }
       case Constants.TEMP_LOWER: {
-        index = this.device.notifyTempLower.toInt();
+        index = this.notification.notifyTempLower.toInt();
         break;
       }
       case Constants.TEMP_HIGHER: {
-        index = this.device.notifyTempHigher.toInt();
+        index = this.notification.notifyTempHigher.toInt();
         break;
       }
       default: {

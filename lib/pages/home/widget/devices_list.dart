@@ -39,6 +39,10 @@ class _DevicesListState extends State<DevicesList> {
                 print('parseDouble temperature=[${globals.parseDouble(values['temperature'])}]');
                 // lists.add(key);
                 // deviceLists.add(Device.fromEntity(ItemEntity.fromSnapshot(snapshot.data)));
+
+                print('notification=${values['notification']}');
+
+
                 deviceLists.add(Device(
                   id: values['id'] ?? '',
                   uid: values['uid'] ?? '',
@@ -58,6 +62,8 @@ class _DevicesListState extends State<DevicesList> {
                   notifyTempLower: globals.parseDouble(values['notifyTempLower'] ?? 0),
                   notifyTempHigher: globals.parseDouble(values['notifyTempHigher'] ?? 0),
                   notifyEmail: values['notifyEmail'] ?? '',
+
+
 
                   deviceType: values['deviceType'] ?? '',
 
