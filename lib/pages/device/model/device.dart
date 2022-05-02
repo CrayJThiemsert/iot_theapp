@@ -16,6 +16,7 @@ class Device extends Item{
   final double readVoltage;
   final String updatedWhen;
 
+
   double notifyHumidLower;
   double notifyHumidHigher;
   double notifyTempLower;
@@ -40,6 +41,7 @@ class Device extends Item{
     double temperature = 0,
     double readVoltage = 0,
     String updatedWhen = '',
+    bool isSendNotify = false,
 
     double notifyHumidLower = 0,
     double notifyHumidHigher = 0,
@@ -62,6 +64,7 @@ class Device extends Item{
       this.id = id ?? '',
       this.uid = uid ?? '',
       this.updatedWhen = updatedWhen ?? '',
+
 
       this.notifyHumidLower = notifyHumidLower ?? 0,
       this.notifyHumidHigher = notifyHumidHigher ?? 0,
@@ -86,6 +89,7 @@ class Device extends Item{
     double? temperature,
     double? readVoltage,
     String? updatedWhen,
+    bool? isSendNotify,
 
     double? notifyHumidLower,
     double? notifyHumidHigher,
@@ -111,6 +115,7 @@ class Device extends Item{
       temperature: temperature ?? this.temperature,
       readVoltage: readVoltage ?? this.readVoltage,
       updatedWhen: updatedWhen ?? this.updatedWhen,
+
 
       notifyHumidLower: notifyHumidLower ?? this.notifyHumidLower,
       notifyHumidHigher: notifyHumidHigher ?? this.notifyHumidHigher,
@@ -138,6 +143,7 @@ class Device extends Item{
       temperature.hashCode ^
       readVoltage.hashCode ^
       updatedWhen.hashCode ^
+
       notifyHumidLower.hashCode ^
       notifyHumidHigher.hashCode ^
       notifyTempLower.hashCode ^

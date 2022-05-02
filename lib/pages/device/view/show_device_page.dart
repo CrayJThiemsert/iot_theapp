@@ -42,7 +42,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   Notify.Notification notification = Notify.Notification();
   Notify.Notification notificationDialog = Notify.Notification();
   User user = const User(uid: 'cray');
-  late DeviceDatabase deviceDatabase;
+  // late DeviceDatabase deviceDatabase;
 
   bool sec10Pressed = false;
   bool sec30Pressed = false;
@@ -196,6 +196,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
   ];
   int selectedIndex = 0;
+
+  bool _checked = false;
   // Color color = Colors.black45;
   // bool isSelected = false;
 
@@ -229,7 +231,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
     // Load necessary cloud database
     // may be not use
-    deviceDatabase = DeviceDatabase(device: device, user: user);
+    // deviceDatabase = DeviceDatabase(device: device, user: user);
     // deviceDatabase.initState();
 
     name_controller = TextEditingController();
@@ -244,7 +246,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // Dispose database.
     name_controller.dispose();
     super.dispose();
-    deviceDatabase.dispose();
+    // deviceDatabase.dispose();
   }
 
   LineTouchData get lineTouchData1 => LineTouchData(
@@ -392,16 +394,32 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               stream: deviceNotificationRef.onValue,
               builder: (context, AsyncSnapshot<DatabaseEvent> snapNotification) {
                 if (snapNotification.hasData && !snapNotification.hasError) {
-                  print('=>${snapNotification.data!.snapshot.value.toString()}');
-                  var notificationStream =
-                  Notify.Notification.fromJson(snapNotification.data!.snapshot.value as Map);
 
-                  // Stream Notification Data from cloud
-                  this.notification.notifyEmail = notificationStream.notifyEmail;
-                  this.notification.notifyTempHigher = notificationStream.notifyTempHigher;
-                  this.notification.notifyTempLower = notificationStream.notifyTempLower;
-                  this.notification.notifyHumidHigher = notificationStream.notifyHumidHigher;
-                  this.notification.notifyHumidLower = notificationStream.notifyHumidLower;
+                  print('snapNotification.hasData=${snapNotification.hasData}');
+                  print('=>${snapNotification.data!.snapshot.value.toString()}');
+                  if(snapNotification.data!.snapshot.value != null) {
+                    print('snapNotification.data!.snapshot.value is not null!!');
+                    var notificationStream =
+                    Notify.Notification.fromJson(snapNotification.data!.snapshot.value as Map);
+
+                    // Stream Notification Data from cloud
+                    this.notification.notifyEmail = notificationStream.notifyEmail;
+                    this.notification.notifyTempHigher = notificationStream.notifyTempHigher;
+                    this.notification.notifyTempLower = notificationStream.notifyTempLower;
+                    this.notification.notifyHumidHigher = notificationStream.notifyHumidHigher;
+                    this.notification.notifyHumidLower = notificationStream.notifyHumidLower;
+                    this.notification.isSendNotify = notificationStream.isSendNotify;
+                  } else {
+                    print('snapNotification.data!.snapshot.value is null!!');
+                  }
+
+                  print('this.notification.isSendNotify=${this.notification.isSendNotify}');
+                  print('this.notification.notifyEmail=${this.notification.notifyEmail}');
+                  print('this.notification.notifyTempHigher=${this.notification.notifyTempHigher}');
+                  print('this.notification.notifyTempLower=${this.notification.notifyTempLower}');
+                  print('this.notification.notifyHumidHigher=${this.notification.notifyHumidHigher}');
+                  print('this.notification.notifyHumidLower=${this.notification.notifyHumidLower}');
+
 
                 }
                 return Scaffold(
@@ -688,54 +706,15 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                               this.notification.notifyHumidLower = deviceReturn.notifyHumidLower;
                               this.notification.notifyHumidHigher = deviceReturn.notifyHumidHigher;
                               this.notification.notifyEmail = deviceReturn.notifyEmail;
+                              // this.notification.isSendNotify = deviceReturn.isSendNotify;
                             });
                           },
 
                         ),
                         SizedBox(height: 8,),
                         // Notification display
-                        SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              Text(
-                                this.notification.notifyEmail,
-                                style: TextStyle( fontSize: 14, color: Colors.black87),
-                              ),
-                              SizedBox(height: 16,),
-                              Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              // SizedBox(height: 8,),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                  Text('${this.notification.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                  Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                  Text('${this.notification.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                ],
-                              ),
-                              SizedBox(height: 8,),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                  Text('${this.notification.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                  Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                  Text('${this.notification.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                ],
-                              ),
+                        drawNotificationDetail(),
 
-                              // buildCustomPicker(),
-                            ],
-                          ),
-                        ),
                         SizedBox(height: 16,),
                         // Row(
                         //   children: [
@@ -1228,6 +1207,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       'notifyTempLower': (this.notificationDialog.notifyTempLower == 0) ? this.notification.notifyTempLower : this.notificationDialog.notifyTempLower,
       'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0) ? this.notification.notifyTempHigher : this.notificationDialog.notifyTempHigher,
       'notifyEmail': this.notificationDialog.notifyEmail,
+      'isSendNotify': this.notification.isSendNotify,
     }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
     .whenComplete(() {
       print('updated notification settings success.');
@@ -1253,6 +1233,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
     return;
   }
+
 
   @override
   void afterFirstLayout(BuildContext context) {
@@ -1452,17 +1433,51 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // }
   }
 
-  Future<Device?> openNotificationInputDialog() => showDialog<Device>(
+  Future<Notify.Notification?> openNotificationInputDialog() => showDialog<Notify.Notification>(
+
       context: context,
       builder: (context) => AlertDialog(
-        title: Center(child: Text('Notification')),
+        insetPadding: EdgeInsets.only(top: 2.0, left: 4.0, right: 4.0, ),
+        title: Container(
+          alignment: Alignment.topCenter,
+            child: Text('Notification')),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('will send to', style: TextStyle( fontSize: 16, color: Colors.black45),),
+              StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) {
+                  return Container(
+                    padding: EdgeInsets.only(left: 0.0, right: 0.0),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black26)),
+                    child: CheckboxListTile(
+
+                      title: Text('Send notification email', style: TextStyle(fontSize: 16, color: Colors.black87),),
+                      subtitle: Text('Enable send the notification email when it meet condition.', style: TextStyle(fontSize: 12, color: Colors.black38),),
+                      secondary: Icon(Icons.mail_outline),
+                      controlAffinity: ListTileControlAffinity.trailing,
+                      value: this.notification.isSendNotify,
+                      selected: this.notification.isSendNotify,
+                      // value: _checked,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          this.notification.isSendNotify = value!;
+                          // this.notificationDialog.isSendNotify = value!;
+                          // _checked = value!;
+                          print('check value=${value}');
+                        });
+                      },
+                      activeColor: Colors.lightGreen,
+                      checkColor: Colors.yellow,
+
+                    ),
+                  );
+                }
+              ),
+
+              // Text('will send to', style: TextStyle( fontSize: 16, color: Colors.black45),),
               Form(
                 key: _emailFormKey,
                 child: TextFormField(
@@ -1486,8 +1501,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                   // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
                   autofocus: false,
                   decoration: InputDecoration(
-                    // label: Text('Emailx'),
-                    labelText: 'Email:',
+                    label: Text('Email:', style: TextStyle( fontSize: 16, color: Colors.black45),),
+                    // labelText: Text('Email:'),
                     hintText: 'Enter your email address',
                   ),
                   // controller: name_controller,
@@ -1735,6 +1750,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text('Temperature', style: TextStyle(color: Colors.black45),),
+            SizedBox(width: 25,),
             buildTemperatureNumberPicker(Constants.TEMP_LOWER),
             Text('or', style: TextStyle(color: Colors.black45),),
             buildTemperatureNumberPicker(Constants.TEMP_HIGHER),
@@ -1875,5 +1891,65 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       }
     }
     return index;
+  }
+
+  Widget drawNotificationDetail() {
+    if(this.notification.isSendNotify) {
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            Text(
+              this.notification.notifyEmail,
+              style: TextStyle( fontSize: 14, color: Colors.black87),
+            ),
+            SizedBox(height: 16,),
+            Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            // SizedBox(height: 8,),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                Text('${this.notification.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                Text('${this.notification.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+              ],
+            ),
+            SizedBox(height: 8,),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                Text('${this.notification.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+                Text('${this.notification.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+              ],
+            ),
+
+            // buildCustomPicker(),
+          ],
+        ),
+      );
+    } else {
+      return SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('none', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            // buildCustomPicker(),
+          ],
+        ),
+      );
+    }
+
   }
 }

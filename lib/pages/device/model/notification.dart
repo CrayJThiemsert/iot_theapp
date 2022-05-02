@@ -17,6 +17,7 @@ class Notification extends Item{
   double notifyTempLower;
   double notifyTempHigher;
   String notifyEmail;
+  bool isSendNotify;
 
 
 
@@ -34,6 +35,7 @@ class Notification extends Item{
     double notifyTempLower = 0,
     double notifyTempHigher = 0,
     String notifyEmail = '',
+    bool isSendNotify = false,
   })
     : this.index = index,
       this.name = name ?? '',
@@ -43,11 +45,13 @@ class Notification extends Item{
       this.uid = uid ?? '',
       this.updatedWhen = updatedWhen ?? '',
 
+
       this.notifyHumidLower = notifyHumidLower ?? 0,
       this.notifyHumidHigher = notifyHumidHigher ?? 0,
       this.notifyTempLower = notifyTempLower ?? 0,
       this.notifyTempHigher = notifyTempHigher ?? 0,
-      this.notifyEmail = notifyEmail ?? ''
+      this.notifyEmail = notifyEmail ?? '',
+        this.isSendNotify = isSendNotify ?? false
 
     ;
 
@@ -65,6 +69,7 @@ class Notification extends Item{
     double? notifyTempHigher,
 
     String? notifyEmail,
+    bool? isSendNotify,
 
   }) {
     return Notification(
@@ -80,7 +85,7 @@ class Notification extends Item{
       notifyTempLower: notifyTempLower ?? this.notifyTempLower,
       notifyTempHigher: notifyTempHigher ?? this.notifyTempHigher,
       notifyEmail: notifyEmail ?? this.notifyEmail,
-
+      isSendNotify: isSendNotify ?? this.isSendNotify,
     );
   }
 
@@ -96,7 +101,8 @@ class Notification extends Item{
       notifyHumidHigher.hashCode ^
       notifyTempLower.hashCode ^
       notifyTempHigher.hashCode ^
-      notifyEmail.hashCode;
+      notifyEmail.hashCode ^
+      isSendNotify.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -116,12 +122,13 @@ class Notification extends Item{
           notifyTempHigher == other.notifyTempHigher &&
 
           notifyEmail == other.notifyEmail &&
+          isSendNotify == other.isSendNotify &&
 
           name == other.name; // &&
 
   @override
   String toString() {
-    return 'Notification { id: $id, uid: $uid, index: $index, name: $name, deviceId: $deviceId, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail}';
+    return 'Notification { id: $id, uid: $uid, index: $index, name: $name, deviceId: $deviceId, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail, isSendNotify: $isSendNotify}';
   }
 
   ItemEntity toEntity() {
@@ -143,6 +150,7 @@ class Notification extends Item{
       uid: json['uid'] ?? '',
       deviceId: json['deviceId'] ?? '',
       notifyEmail: json['notifyEmail'] ?? '',
+      isSendNotify: json['isSendNotify'] ?? false,
       notifyHumidLower: json['notifyHumidLower'].toDouble() ?? 0,
       notifyHumidHigher: json['notifyHumidHigher'].toDouble() ?? 0,
       notifyTempLower: json['notifyTempLower'].toDouble() ?? 0,
