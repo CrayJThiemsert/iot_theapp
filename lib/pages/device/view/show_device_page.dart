@@ -1151,44 +1151,66 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   /**
    * First contact to "the Node" to pass reading interval value
    */
-  Future<http.Response> updateReadingInterval() async {
+  // Future<http.Response> updateReadingInterval() async {
+  Future<void> updateReadingInterval() async {
     // update reading interval in cloud database
     // deviceDatabase.updateDevice(device);
     print('update reading interval in cloud database - users/${user.uid}/devices/${device.uid}');
     var deviceRef = FirebaseDatabase.instance
-        .reference()
+        .ref()
         .child('users/${user.uid}/devices/${device.uid}')
         .update({
       // 'name':  device.name,
       'readingInterval': selectedInterval,
+    }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
+        .whenComplete(() {
+      print('updated notification settings success.');
+      showDialog(
+          context: context,
+          builder: (_) => CupertinoAlertDialog(
+            title: Text("Update Successfully"),
+            content: Text("Update reading interval settings is successfully."),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("OK"),
+                onPressed: () {
+                  // Navigator.pop(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          barrierDismissible: false
+      );
+
     });
 
-    // Hostname on device detail page
-    String hostName = '';
-    String hostIp = '';
-    String macAddressWithoutColon = hostName = device.uid.replaceAll(':', '');
-    hostName = '${Constants.of(context)!.DEFAULT_THE_NODE_DNS}${macAddressWithoutColon.toLowerCase()}.local';
-    hostIp = '${device.localip}:80';
-    print('hostName=${hostName}');
-    print('host local ip address=${hostIp}');
-    print('Device reading interval[${selectedInterval}] - setting...');
-    var url =
-    // Uri.https('www.googleapis.com', '/books/v1/volumes', {'q': '{http}'});
-    //   Uri.http(hostName, '/setting', {'interval': selectedInterval.toString()});
-    // Change to use local ip address of each device to be send request to update device setting from "theApp".
-      Uri.http(hostIp, '/setting', {'interval': selectedInterval.toString()});
+    // // Hostname on device detail page
+    // String hostName = '';
+    // String hostIp = '';
+    // String macAddressWithoutColon = hostName = device.uid.replaceAll(':', '');
+    // hostName = '${Constants.of(context)!.DEFAULT_THE_NODE_DNS}${macAddressWithoutColon.toLowerCase()}.local';
+    // hostIp = '${device.localip}:80';
+    // print('hostName=${hostName}');
+    // print('host local ip address=${hostIp}');
+    // print('Device reading interval[${selectedInterval}] - setting...');
+    // var url =
+    // // Uri.https('www.googleapis.com', '/books/v1/volumes', {'q': '{http}'});
+    // //   Uri.http(hostName, '/setting', {'interval': selectedInterval.toString()});
+    // // Change to use local ip address of each device to be send request to update device setting from "theApp".
+    //   Uri.http(hostIp, '/setting', {'interval': selectedInterval.toString()});
+    //
+    // // Await the http get response, then decode the json-formatted response.
+    // final response = await http.get(url);
+    // print("status code =${response.statusCode}");
+    // if (response.statusCode == 200) {
+    //   print('Device reading interval[${selectedInterval}] - setting is ok!!');
+    // } else {
+    //   print('Device reading interval[${selectedInterval}] - setting is not ok!!');
+    //   throw Exception('Failed to do wifi settings');
+    // }
 
-    // Await the http get response, then decode the json-formatted response.
-    final response = await http.get(url);
-    print("status code =${response.statusCode}");
-    if (response.statusCode == 200) {
-      print('Device reading interval[${selectedInterval}] - setting is ok!!');
-    } else {
-      print('Device reading interval[${selectedInterval}] - setting is not ok!!');
-      throw Exception('Failed to do wifi settings');
-    }
-
-    return response;
+    // return response;
   }
 
   /**
