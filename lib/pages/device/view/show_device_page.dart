@@ -555,100 +555,9 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                         ),
                         buildReadingIntervalCard(context),
                         SizedBox(height: 8,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: 28,
-                                right: 28,
-                              ),
-                              // child: LineChartSample10(),
-                              child: SizedBox(
-                                width: 150,
-                                height: 150,
-                                child: LineChart(
-                                  LineChartData(
-                                    borderData: FlBorderData(
-                                        show: true,
-                                        border: Border.all(color: const Color(0xff37434d), width: 1)),
-                                    minY: 0,
-                                    maxY: 100,
-                                    minX: tempPoints.first.x,
-                                    maxX: tempPoints.last.x,
-                                    // lineTouchData: LineTouchData(enabled: true),
-                                    lineTouchData: lineTouchData1,
-                                    clipData: FlClipData.all(),
-                                    // gridData: FlGridData(
-                                    //   show: true,
-                                    //   drawVerticalLine: false,
-                                    // ),
-                                    gridData: FlGridData(
-                                      show: true,
-                                      drawVerticalLine: true,
-                                      horizontalInterval: 10,
-                                      verticalInterval: 10,
-                                      getDrawingHorizontalLine: (value) {
-                                        return FlLine(
-                                          color: const Color(0xffb9c4c9),
-                                          strokeWidth: 0.5,
-                                        );
-                                      },
-                                      getDrawingVerticalLine: (value) {
-                                        return FlLine(
-                                          color: const Color(0xffb9c4c9),
-                                          strokeWidth: 0.5,
-                                        );
-                                      },
-                                    ),
-                                    lineBarsData: [
-                                      tempLine(tempPoints),
-                                      humidLine(humidPoints),
-                                    ],
-                                    titlesData: FlTitlesData(
-                                      show: true,
-                                      leftTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
+                        // draw line chart
 
-                                          reservedSize: 38,
-                                        ),
-                                      ),
-                                      rightTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: false,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const <Widget>[
-                                Indicator(
-                                  color: Colors.orangeAccent,
-                                  text: 'Temperature',
-                                  isSquare: true,
-                                ),
-                                SizedBox(
-                                  height: 4,
-                                ),
-                                Indicator(
-                                  color: Colors.blueAccent,
-                                  text: 'Humidity',
-                                  isSquare: true,
-                                ),
-                                SizedBox(
-                                  height: 18,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        drawLineChart(),
 
                         // Notification setting
                         SizedBox(height: 8,),
@@ -1256,9 +1165,66 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     return;
   }
 
+  Future<List<WeatherData>> getLast10Histories() async {
+
+    final onceHistoriesSnapshot = await FirebaseDatabase.instance
+        .ref()
+        .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
+        .orderByKey()
+        .limitToLast(10)
+        .get();
+
+    print(onceHistoriesSnapshot); // to debug and see if data is returned
+
+    List<WeatherData> histories = [];
+
+    if(onceHistoriesSnapshot.exists) {
+      histories.clear();
+      tempPoints.clear();
+      humidPoints.clear();
+      dateTimeValues.clear();
+
+      print(onceHistoriesSnapshot.value);
+      Map<dynamic, dynamic>? values = onceHistoriesSnapshot.value as Map?;
+
+      values!.forEach((key, weatherValues) {
+        print('key=${key}');
+        print('temperature=[${weatherValues['temperature']}]');
+
+        tempPoints.add(FlSpot(xValue, globals.parseDouble(weatherValues['temperature'] ?? 0)));
+        humidPoints.add(FlSpot(xValue, globals.parseDouble(weatherValues['humidity'] ?? 0)));
+        dateTimeValues.add(weatherValues['uid'] ?? '');
+
+        xValue += step;
+
+        histories.add(WeatherData(
+            uid: weatherValues['uid'] ?? '',
+            deviceId: weatherValues['deviceId'] ?? '',
+            humidity: globals.parseDouble(weatherValues['humidity'] ?? 0),
+            temperature: globals.parseDouble(weatherValues['temperature'] ?? 0),
+            readVoltage: globals.parseDouble(weatherValues['readVoltage'] ?? 0)
+
+        ));
+      });
+
+      tempPoints.sort((a, b) => a.x.compareTo(b.x));
+      humidPoints.sort((a, b) => a.x.compareTo(b.x));
+      dateTimeValues.sort((a, b) => a.compareTo(b));
+
+    } else {
+      histories.clear();
+      tempPoints.add(FlSpot(xValue, 0));
+      humidPoints.add(FlSpot(xValue, 0));
+      dateTimeValues.add('_');
+      print('No data available.');
+    }
+
+    return histories;
+  }
 
   @override
   void afterFirstLayout(BuildContext context) {
+    getLast10Histories();
     switch(device.readingInterval) {
       case Constants.INTERVAL_SECOND_10: {
         setState(() {
@@ -1973,5 +1939,102 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
       );
     }
 
+  }
+
+  Widget drawLineChart() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(
+            left: 28,
+            right: 28,
+          ),
+          // child: LineChartSample10(),
+          child: SizedBox(
+            width: 150,
+            height: 150,
+            child: LineChart(
+              LineChartData(
+                borderData: FlBorderData(
+                    show: true,
+                    border: Border.all(color: const Color(0xff37434d), width: 1)),
+                minY: 0,
+                maxY: 100,
+                minX: tempPoints.first.x,
+                maxX: tempPoints.last.x,
+                // lineTouchData: LineTouchData(enabled: true),
+                lineTouchData: lineTouchData1,
+                clipData: FlClipData.all(),
+                // gridData: FlGridData(
+                //   show: true,
+                //   drawVerticalLine: false,
+                // ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  horizontalInterval: 10,
+                  verticalInterval: 10,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: const Color(0xffb9c4c9),
+                      strokeWidth: 0.5,
+                    );
+                  },
+                  getDrawingVerticalLine: (value) {
+                    return FlLine(
+                      color: const Color(0xffb9c4c9),
+                      strokeWidth: 0.5,
+                    );
+                  },
+                ),
+                lineBarsData: [
+                  tempLine(tempPoints),
+                  humidLine(humidPoints),
+                ],
+                titlesData: FlTitlesData(
+                  show: true,
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+
+                      reservedSize: 38,
+                    ),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: false,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const <Widget>[
+            Indicator(
+              color: Colors.orangeAccent,
+              text: 'Temperature',
+              isSquare: true,
+            ),
+            SizedBox(
+              height: 4,
+            ),
+            Indicator(
+              color: Colors.blueAccent,
+              text: 'Humidity',
+              isSquare: true,
+            ),
+            SizedBox(
+              height: 18,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
