@@ -65,7 +65,7 @@ class _DevicesListState extends State<DevicesList> {
 
 
 
-                  deviceType: values['deviceType'] ?? '',
+                  wTankType: values['wTankType'] ?? '',
 
                 ));
               });

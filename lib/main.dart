@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'firebase_options.dart';
 import 'package:flare_splash_screen/flare_splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +108,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return OverlaySupport.global(child: MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -191,7 +192,7 @@ class _MyAppState extends State<MyApp> {
         // }
         return MaterialPageRoute(builder: (context) => UnknownScreen());
       },
-    );
+    ));
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:after_layout/after_layout.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -14,6 +16,9 @@ import 'package:iot_theapp/utils/constants.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:iot_theapp/globals.dart' as globals;
+import 'package:iot_theapp/utils/sizes_helpers.dart';
+import 'package:overlay_support/overlay_support.dart';
+
 import 'package:validators/validators.dart';
 
 import '../../../line_chart_sample10.dart';
@@ -27,16 +32,16 @@ class ShowDevicePage extends StatefulWidget {
 
   final List<double> yValues = const [1.3, 1, 1.8, 1.5, 2.2, 1.8, 3];
 
-  const ShowDevicePage({
-    Key? key,
-    required this.deviceUid,
-    required this.device}) : super(key: key);
+  const ShowDevicePage(
+      {Key? key, required this.deviceUid, required this.device})
+      : super(key: key);
 
   @override
   _ShowDevicePageState createState() => _ShowDevicePageState(deviceUid, device);
 }
 
-class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<ShowDevicePage> {
+class _ShowDevicePageState extends State<ShowDevicePage>
+    with AfterLayoutMixin<ShowDevicePage> {
   String deviceUid = '';
   Device device = Device();
   Notify.Notification notification = Notify.Notification();
@@ -193,20 +198,127 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     '98',
     '99',
     '100',
-
   ];
-  int selectedIndex = 0;
 
-  bool _checked = false;
+  String mSelectedTankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+  bool mVisibilityHWL = false;
+  bool mVisibilityLD = false;
+
+  // int selectedIndex = 0;
+
+  // bool _checked = false;
   // Color color = Colors.black45;
   // bool isSelected = false;
 
-  _ShowDevicePageState(this.deviceUid, this.device);
+  // Horizontal List Wheel
+  // List<Widget> items = [
+  //   Center(
+  //       child: Container(
+  //     width: 100,
+  //     height: 50,
+  //     padding: new EdgeInsets.all(10.0),
+  //     child: Card(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(15.0),
+  //       ),
+  //       color: Colors.red,
+  //       elevation: 10,
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: <Widget>[
+  //           const ListTile(
+  //             leading: Icon(Icons.album, size: 60),
+  //             title: Text('Sonu Nigam', style: TextStyle(fontSize: 30.0)),
+  //             subtitle: Text('Best of Sonu Nigam Music.',
+  //                 style: TextStyle(fontSize: 18.0)),
+  //           ),
+  //           ButtonBar(
+  //             children: <Widget>[
+  //               RaisedButton(
+  //                 child: const Text('Play'),
+  //                 onPressed: () {/* ... */},
+  //               ),
+  //               RaisedButton(
+  //                 child: const Text('Pause'),
+  //                 onPressed: () {/* ... */},
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   )),
+  //   ListTile(
+  //     leading: Icon(Icons.local_activity, size: 50),
+  //     title: Text('Activity'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_airport, size: 50),
+  //     title: Text('Airport'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_atm, size: 50),
+  //     title: Text('ATM'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_bar, size: 50),
+  //     title: Text('Bar'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_cafe, size: 50),
+  //     title: Text('Cafe'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_car_wash, size: 50),
+  //     title: Text('Car Wash'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_convenience_store, size: 50),
+  //     title: Text('Heart Shaker'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_dining, size: 50),
+  //     title: Text('Dining'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_drink, size: 50),
+  //     title: Text('Drink'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_florist, size: 50),
+  //     title: Text('Florist'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_gas_station, size: 50),
+  //     title: Text('Gas Station'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  //   ListTile(
+  //     leading: Icon(Icons.local_grocery_store, size: 50),
+  //     title: Text('Grocery Store'),
+  //     subtitle: Text('Description here'),
+  //   ),
+  // ];
 
+  _ShowDevicePageState(this.deviceUid, this.device);
 
   @override
   void initState() {
     touchedValue = -1;
+
+    // for (int i = 0; i < 10; i++) {
+    //   data.add(Random().nextInt(100) + 1);
+    // }
 
     // for(int i=0; i < 100;i++) {
     //   pickerValues[i] = i.toString();
@@ -221,9 +333,12 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     humidPoints.add(FlSpot(xValue, 0));
     dateTimeValues.add('_');
     print('init state');
-    print('tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length-1].x}');
-    print('tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length-1].y}');
-    print('dateTimeValues[dateTimeValues.length-1]=${dateTimeValues[dateTimeValues.length-1]}');
+    print(
+        'tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length - 1].x}');
+    print(
+        'tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length - 1].y}');
+    print(
+        'dateTimeValues[dateTimeValues.length-1]=${dateTimeValues[dateTimeValues.length - 1]}');
     print('tempPoints.length=${tempPoints.length}');
     print('dateTimeValues.length=${dateTimeValues.length}');
     xValue += step;
@@ -235,10 +350,6 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // deviceDatabase.initState();
 
     name_controller = TextEditingController();
-
-
-
-
   }
 
   @override
@@ -250,106 +361,104 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   }
 
   LineTouchData get lineTouchData1 => LineTouchData(
-    handleBuiltInTouches: true,
-    touchTooltipData: LineTouchTooltipData(
-      tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+        handleBuiltInTouches: true,
+        touchTooltipData: LineTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+              print('touchedBarSpots.length=${touchedBarSpots.length}');
+              print('touchedBarSpots.toString=${touchedBarSpots.toString()}');
 
-      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-        print('touchedBarSpots.length=${touchedBarSpots.length}');
-        print('touchedBarSpots.toString=${touchedBarSpots.toString()}');
+              return touchedBarSpots.map((barSpot) {
+                print('barSpot.barIndex=${barSpot.barIndex}');
+                print('barSpot.spotIndex=${barSpot.spotIndex}');
+                final flSpot = barSpot;
+                // if (flSpot.x == 0 || flSpot.x == 6) {
+                //   return null;
+                // }
+                if (flSpot.x == 0) {
+                  return null;
+                }
 
-        return touchedBarSpots.map((barSpot) {
-          print('barSpot.barIndex=${barSpot.barIndex}');
-          print('barSpot.spotIndex=${barSpot.spotIndex}');
-          final flSpot = barSpot;
-          // if (flSpot.x == 0 || flSpot.x == 6) {
-          //   return null;
-          // }
-          if (flSpot.x == 0) {
-            return null;
-          }
+                // TextAlign textAlign;
+                // switch (flSpot.x.toInt()) {
+                //   case 1:
+                //     textAlign = TextAlign.left;
+                //     break;
+                //   case 5:
+                //     textAlign = TextAlign.right;
+                //     break;
+                //   default:
+                //     textAlign = TextAlign.center;
+                // }
+                TextAlign textAlign = TextAlign.center;
+                String dateTimeString = '';
+                if (barSpot.barIndex == 1) {
+                  dateTimeString =
+                      '${dateTimeValues[flSpot.x.toInt()].toString()}\n';
+                }
+                print('dateTimeString=${dateTimeString}');
 
-
-          // TextAlign textAlign;
-          // switch (flSpot.x.toInt()) {
-          //   case 1:
-          //     textAlign = TextAlign.left;
-          //     break;
-          //   case 5:
-          //     textAlign = TextAlign.right;
-          //     break;
-          //   default:
-          //     textAlign = TextAlign.center;
-          // }
-          TextAlign textAlign = TextAlign.center;
-          String dateTimeString = '';
-          if(barSpot.barIndex == 1) {
-            dateTimeString = '${dateTimeValues[flSpot.x.toInt()].toString()}\n';
-          }
-          print('dateTimeString=${dateTimeString}');
-
-          return LineTooltipItem(
-            // '${widget.weekDays[flSpot.x.toInt()]} \n',
-            // '${dateTimeString}${flSpot.y.toString()}',
-            '${dateTimeString}',
-            const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [
-              TextSpan(
-                text: flSpot.y.toString(),
-                style: TextStyle(
-                  color: Colors.grey[100],
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-              // const TextSpan(
-              //   text: ' k ',
-              //   style: TextStyle(
-              //     fontStyle: FontStyle.italic,
-              //     fontWeight: FontWeight.normal,
-              //   ),
-              // ),
-              // const TextSpan(
-              //   text: 'calories',
-              //   style: TextStyle(
-              //     fontWeight: FontWeight.normal,
-              //   ),
-              // ),
-            ],
-            textAlign: textAlign,
-          );
-        }).toList();
-      }),
-      // touchCallback:
-      //     (FlTouchEvent event, LineTouchResponse? lineTouch) {
-      //   if (!event.isInterestedForInteractions ||
-      //       lineTouch == null ||
-      //       lineTouch.lineBarSpots == null) {
-      //     setState(() {
-      //       touchedValue = -1;
-      //     });
-      //     return;
-      //   }
-      //   final value = lineTouch.lineBarSpots![0].x;
-      //
-      //   if (value == 0 || value == 6) {
-      //     setState(() {
-      //       touchedValue = -1;
-      //     });
-      //     return;
-      //   }
-      //
-      //   setState(() {
-      //     touchedValue = value;
-      //   });
-      // }
-  );
+                return LineTooltipItem(
+                  // '${widget.weekDays[flSpot.x.toInt()]} \n',
+                  // '${dateTimeString}${flSpot.y.toString()}',
+                  '${dateTimeString}',
+                  const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: flSpot.y.toString(),
+                      style: TextStyle(
+                        color: Colors.grey[100],
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    // const TextSpan(
+                    //   text: ' k ',
+                    //   style: TextStyle(
+                    //     fontStyle: FontStyle.italic,
+                    //     fontWeight: FontWeight.normal,
+                    //   ),
+                    // ),
+                    // const TextSpan(
+                    //   text: 'calories',
+                    //   style: TextStyle(
+                    //     fontWeight: FontWeight.normal,
+                    //   ),
+                    // ),
+                  ],
+                  textAlign: textAlign,
+                );
+              }).toList();
+            }),
+        // touchCallback:
+        //     (FlTouchEvent event, LineTouchResponse? lineTouch) {
+        //   if (!event.isInterestedForInteractions ||
+        //       lineTouch == null ||
+        //       lineTouch.lineBarSpots == null) {
+        //     setState(() {
+        //       touchedValue = -1;
+        //     });
+        //     return;
+        //   }
+        //   final value = lineTouch.lineBarSpots![0].x;
+        //
+        //   if (value == 0 || value == 6) {
+        //     setState(() {
+        //       touchedValue = -1;
+        //     });
+        //     return;
+        //   }
+        //
+        //   setState(() {
+        //     touchedValue = value;
+        //   });
+        // }
+      );
 
   @override
   Widget build(BuildContext context) {
-
     var deviceHistoryRef = FirebaseDatabase.instance
         .ref()
         .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
@@ -369,8 +478,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
         builder: (context, AsyncSnapshot<DatabaseEvent> snapHistory) {
           if (snapHistory.hasData && !snapHistory.hasError) {
             print('=>${snapHistory.data!.snapshot.value.toString()}');
-            var weatherHistory =
-                WeatherHistory.fromJson(snapHistory.data!.snapshot.value as Map);
+            var weatherHistory = WeatherHistory.fromJson(
+                snapHistory.data!.snapshot.value as Map);
             // var weatherHistory = WeatherHistory.fromSnapshot(snap.data.snapshot);
 
             // Prepare value to draw live line chart
@@ -379,286 +488,398 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               humidPoints.removeAt(0);
             }
             // used to be setState
-            print('xValue=${xValue}, weatherHistory.temperature=${weatherHistory.weatherData.temperature}|${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}');
-            print('xValue=${xValue}, weatherHistory.humidity=${weatherHistory.weatherData.humidity}');
-              tempPoints.add(FlSpot(xValue, weatherHistory.weatherData.temperature));
-              humidPoints.add(FlSpot(xValue, weatherHistory.weatherData.humidity));
+            print(
+                'xValue=${xValue}, weatherHistory.temperature=${weatherHistory.weatherData.temperature}|${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}');
+            print(
+                'xValue=${xValue}, weatherHistory.humidity=${weatherHistory.weatherData.humidity}');
+            tempPoints
+                .add(FlSpot(xValue, weatherHistory.weatherData.temperature));
+            humidPoints
+                .add(FlSpot(xValue, weatherHistory.weatherData.humidity));
             dateTimeValues.add(weatherHistory.weatherData.uid);
 
-            print('tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length-1].x}');
-            print('tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length-1].y}');
+            print(
+                'tempPoints[tempPoints.length-1].x=${tempPoints[tempPoints.length - 1].x}');
+            print(
+                'tempPoints[tempPoints.length-1].y=${tempPoints[tempPoints.length - 1].y}');
             print('tempPoints.length=${tempPoints.length}');
             xValue += step;
 
             return StreamBuilder(
-              stream: deviceNotificationRef.onValue,
-              builder: (context, AsyncSnapshot<DatabaseEvent> snapNotification) {
-                if (snapNotification.hasData && !snapNotification.hasError) {
+                stream: deviceNotificationRef.onValue,
+                builder:
+                    (context, AsyncSnapshot<DatabaseEvent> snapNotification) {
+                  if (snapNotification.hasData && !snapNotification.hasError) {
+                    print(
+                        'snapNotification.hasData=${snapNotification.hasData}');
+                    print(
+                        '=>${snapNotification.data!.snapshot.value.toString()}');
+                    if (snapNotification.data!.snapshot.value != null) {
+                      print(
+                          'snapNotification.data!.snapshot.value is not null!!');
+                      var notificationStream = Notify.Notification.fromJson(
+                          snapNotification.data!.snapshot.value as Map);
 
-                  print('snapNotification.hasData=${snapNotification.hasData}');
-                  print('=>${snapNotification.data!.snapshot.value.toString()}');
-                  if(snapNotification.data!.snapshot.value != null) {
-                    print('snapNotification.data!.snapshot.value is not null!!');
-                    var notificationStream =
-                    Notify.Notification.fromJson(snapNotification.data!.snapshot.value as Map);
+                      // Stream Notification Data from cloud
+                      this.notification.notifyEmail =
+                          notificationStream.notifyEmail;
+                      this.notification.notifyTempHigher =
+                          notificationStream.notifyTempHigher;
+                      this.notification.notifyTempLower =
+                          notificationStream.notifyTempLower;
+                      this.notification.notifyHumidHigher =
+                          notificationStream.notifyHumidHigher;
+                      this.notification.notifyHumidLower =
+                          notificationStream.notifyHumidLower;
+                      this.notification.isSendNotify =
+                          notificationStream.isSendNotify;
+                    } else {
+                      print('snapNotification.data!.snapshot.value is null!!');
+                    }
 
-                    // Stream Notification Data from cloud
-                    this.notification.notifyEmail = notificationStream.notifyEmail;
-                    this.notification.notifyTempHigher = notificationStream.notifyTempHigher;
-                    this.notification.notifyTempLower = notificationStream.notifyTempLower;
-                    this.notification.notifyHumidHigher = notificationStream.notifyHumidHigher;
-                    this.notification.notifyHumidLower = notificationStream.notifyHumidLower;
-                    this.notification.isSendNotify = notificationStream.isSendNotify;
-                  } else {
-                    print('snapNotification.data!.snapshot.value is null!!');
+                    print(
+                        'this.notification.isSendNotify=${this.notification.isSendNotify}');
+                    print(
+                        'this.notification.notifyEmail=${this.notification.notifyEmail}');
+                    print(
+                        'this.notification.notifyTempHigher=${this.notification.notifyTempHigher}');
+                    print(
+                        'this.notification.notifyTempLower=${this.notification.notifyTempLower}');
+                    print(
+                        'this.notification.notifyHumidHigher=${this.notification.notifyHumidHigher}');
+                    print(
+                        'this.notification.notifyHumidLower=${this.notification.notifyHumidLower}');
                   }
-
-                  print('this.notification.isSendNotify=${this.notification.isSendNotify}');
-                  print('this.notification.notifyEmail=${this.notification.notifyEmail}');
-                  print('this.notification.notifyTempHigher=${this.notification.notifyTempHigher}');
-                  print('this.notification.notifyTempLower=${this.notification.notifyTempLower}');
-                  print('this.notification.notifyHumidHigher=${this.notification.notifyHumidHigher}');
-                  print('this.notification.notifyHumidLower=${this.notification.notifyHumidLower}');
-
-
-                }
-                return Scaffold(
-                  appBar: AppBar(
-                    title: Text('${device.name ?? device.uid} Detail'),
-                  ),
-                  body: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 12,),
-                        Center(
-                          child: Container(
-                            width: 200,
-                            height: 200,
-                            decoration: new BoxDecoration(
-                              color: Colors.lightGreen.shade800,
-                              border: Border.all(color: Colors.green.shade400, width: 8.0),
-                              borderRadius: new BorderRadius.all(Radius.circular(150.0)),
-                            ),
-                            child: IntrinsicHeight(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      SizedBox(height: 50,),
-                                      Container(
-                                        child: Text(
-                                          '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
-                                          // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
-                                          style: headlineStyle,
-                                          // style: TextStyle(
-                                          //   color: Colors.white,
-                                          //   fontFamily: 'Kanit',
-                                          //   fontWeight: FontWeight.w300,
-                                          //   fontSize: 36.0,
-                                          // ),
-                                        ),
-                                      ),
-                                      Container(
-                                        child: Text(
-                                          'Temperature (\u2103)',
-                                          style: unitStyle,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  VerticalDivider(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    thickness: 2,
-                                    // width: 10,
-                                    indent: 10,
-                                    endIndent: 10,
-                                  ),
-
-                                  Column(
-                                    children: [
-                                      SizedBox(height: 50,),
-                                      Container(
-                                        child: Text(
-                                          '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
-                                          style: headlineStyle,
-                                          // style: TextStyle(
-                                          //   color: Colors.white,
-                                          //   fontFamily: 'Kanit',
-                                          //   fontWeight: FontWeight.w300,
-                                          //   fontSize: 36.0,
-                                          // ),
-                                        ),
-                                      ),
-                                      Container(
-                                        child: Text(
-                                          'Humidity (%)',
-                                          style: unitStyle,
-                                          // style: TextStyle(
-                                          //   color: Colors.white,
-                                          //   fontFamily: 'Kanit',
-                                          //   fontWeight: FontWeight.w300,
-                                          //   fontSize: 12.0,
-                                          // ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 12,),
-                        Center(
-                          child: Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text('Device ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                Text('${device.name ?? device.uid}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                Text(' Detail', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Container(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text('latest when ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                Text('${weatherHistory?.weatherData?.uid ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Container(
-                            // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
-                            // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text('battery voltage ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                                Text('${weatherHistory?.weatherData?.readVoltage ?? 'no data'}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                                Text(' volts', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                              ],
-                            ),
-                          ),
-                        ),
-                        buildReadingIntervalCard(context),
-                        SizedBox(height: 8,),
-                        // draw line chart
-
-                        drawLineChart(),
-
-                        // Notification setting
-                        SizedBox(height: 8,),
-                        TextButton(
-                          child: Text('Notification'),
-                          style: TextButton.styleFrom(
-                            primary: Colors.black54,
-                            backgroundColor: Colors.white70,
-                            onSurface: Colors.grey,
-                            textStyle: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 16,
-                              fontStyle: FontStyle.normal,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            shadowColor: Colors.limeAccent,
-                            elevation: 5,
-                          ),
-
-                          // style: ButtonStyle(
-                          //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                          //           (Set<MaterialState> states) {
-                          //         if (states.contains(MaterialState.disabled))
-                          //           return Colors.black54;
-                          //         return null; // Defer to the widget's default.
-                          //       }),
-                          //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                          //           (Set<MaterialState> states) {
-                          //         if (states.contains(MaterialState.focused))
-                          //           return Colors.red;
-                          //         if (states.contains(MaterialState.hovered))
-                          //           return Colors.green;
-                          //         if (states.contains(MaterialState.pressed))
-                          //           return Colors.black54;
-                          //         return null; // Defer to the widget's default.
-                          //       }),
-                          // ),
-                          onPressed: () async {
-                            // final name = await openNotificationInputDialog();
-                            // if(name == null || name.isEmpty) return;
-                            //
-                            // setState(() {
-                            //   this.name = name;
-                            // });
-
-                            // // Prepare notification values before edit them on dialog.
-                            // this.notificationDialog = this.notification;
-
-                            final deviceReturn = await openNotificationInputDialog();
-                            if(deviceReturn == null) return;
-
-                            setState(() {
-                              this.notification.notifyTempLower = deviceReturn.notifyTempLower;
-                              this.notification.notifyTempHigher = deviceReturn.notifyTempHigher;
-                              this.notification.notifyHumidLower = deviceReturn.notifyHumidLower;
-                              this.notification.notifyHumidHigher = deviceReturn.notifyHumidHigher;
-                              this.notification.notifyEmail = deviceReturn.notifyEmail;
-                              // this.notification.isSendNotify = deviceReturn.isSendNotify;
-                            });
-                          },
-
-                        ),
-                        SizedBox(height: 8,),
-                        // Notification display
-                        drawNotificationDetail(),
-
-                        SizedBox(height: 16,),
-                        // Row(
-                        //   children: [
-                        //     Expanded(
-                        //         child: Text(
-                        //           'Name: ',
-                        //           style: TextStyle(fontWeight: FontWeight.w600),
-                        //         ),
-                        //     ),
-                        //     const SizedBox(width: 12,),
-                        //     Text(device.notifyEmail),
-                        //   ],
-                        // )
-
-                      ],
+                  return Scaffold(
+                    appBar: AppBar(
+                      title: Text('${device.name ?? device.uid} Detail'),
                     ),
-                  ),
-                );
-              }
-            );
+                    body: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 12,
+                          ),
+                          // TempAndHumidCircularWidget(weatherHistory: weatherHistory, headlineStyle: headlineStyle, unitStyle: unitStyle),
+                          SizedBox(
+                            height: 12,
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              final deviceReturn =
+                                  await openTankConfigurationDialog();
+                              if (deviceReturn == null) return;
+
+                              setState(() {
+                                this.notification.notifyTempLower =
+                                    deviceReturn.notifyTempLower;
+                                this.notification.notifyTempHigher =
+                                    deviceReturn.notifyTempHigher;
+                                this.notification.notifyHumidLower =
+                                    deviceReturn.notifyHumidLower;
+                                this.notification.notifyHumidHigher =
+                                    deviceReturn.notifyHumidHigher;
+                                this.notification.notifyEmail =
+                                    deviceReturn.notifyEmail;
+                                // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                              });
+                            },
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              // mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Container(child: Text('62.5% Full')),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: displayWidth(context) * 0.3,
+                                      child: Image(
+                                        image: AssetImage(
+                                            'images/tanks/base_vertical_cylinder.jpg'),
+                                      ),
+                                    ),
+                                    Container(
+                                        child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                                child: Text('Tank Volumes:')),
+                                            Container(
+                                                child: Text('6,283.19 Liters')),
+                                          ],
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                                child:
+                                                    Text('Filled Depth(f):')),
+                                            Container(child: Text('120cm')),
+                                          ],
+                                        ),
+                                        buildTankTypeDimensionColumn(
+                                            device.wTankType),
+                                      ],
+                                    )),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          drawLineChart(),
+                          buildDeviceDescription(weatherHistory),
+                          buildReadingIntervalCard(context),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          // draw line chart
+
+                          // Notification setting
+                          Column(
+                            children: [
+                              SizedBox(
+                                height: 8,
+                              ),
+                              TextButton(
+                                child: Text('Notification'),
+                                style: TextButton.styleFrom(
+                                  primary: Colors.black54,
+                                  backgroundColor: Colors.white70,
+                                  onSurface: Colors.grey,
+                                  textStyle: TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 16,
+                                    fontStyle: FontStyle.normal,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  shadowColor: Colors.limeAccent,
+                                  elevation: 5,
+                                ),
+
+                                // style: ButtonStyle(
+                                //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                                //           (Set<MaterialState> states) {
+                                //         if (states.contains(MaterialState.disabled))
+                                //           return Colors.black54;
+                                //         return null; // Defer to the widget's default.
+                                //       }),
+                                //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                                //           (Set<MaterialState> states) {
+                                //         if (states.contains(MaterialState.focused))
+                                //           return Colors.red;
+                                //         if (states.contains(MaterialState.hovered))
+                                //           return Colors.green;
+                                //         if (states.contains(MaterialState.pressed))
+                                //           return Colors.black54;
+                                //         return null; // Defer to the widget's default.
+                                //       }),
+                                // ),
+                                onPressed: () async {
+                                  // final name = await openNotificationInputDialog();
+                                  // if(name == null || name.isEmpty) return;
+                                  //
+                                  // setState(() {
+                                  //   this.name = name;
+                                  // });
+
+                                  // // Prepare notification values before edit them on dialog.
+                                  // this.notificationDialog = this.notification;
+
+                                  final deviceReturn =
+                                      await openNotificationInputDialog();
+                                  if (deviceReturn == null) return;
+
+                                  setState(() {
+                                    this.notification.notifyTempLower =
+                                        deviceReturn.notifyTempLower;
+                                    this.notification.notifyTempHigher =
+                                        deviceReturn.notifyTempHigher;
+                                    this.notification.notifyHumidLower =
+                                        deviceReturn.notifyHumidLower;
+                                    this.notification.notifyHumidHigher =
+                                        deviceReturn.notifyHumidHigher;
+                                    this.notification.notifyEmail =
+                                        deviceReturn.notifyEmail;
+                                    // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                  });
+                                },
+                              ),
+                              SizedBox(
+                                height: 8,
+                              ),
+                              // Notification display
+                              drawNotificationDetail(),
+                            ],
+                          ),
+
+                          SizedBox(
+                            height: 16,
+                          ),
+                          // Row(
+                          //   children: [
+                          //     Expanded(
+                          //         child: Text(
+                          //           'Name: ',
+                          //           style: TextStyle(fontWeight: FontWeight.w600),
+                          //         ),
+                          //     ),
+                          //     const SizedBox(width: 12,),
+                          //     Text(device.notifyEmail),
+                          //   ],
+                          // )
+                        ],
+                      ),
+                    ),
+                  );
+                });
           } else {
             return Scaffold(
-              appBar: AppBar(
-                title: Text('${device.name ?? device.uid} Detail'),
-              ),
-              body: Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Colors.amberAccent,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
-                  strokeWidth: 3,
+                appBar: AppBar(
+                  title: Text('${device.name ?? device.uid} Detail'),
                 ),
-              )
-            );
+                body: Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.amberAccent,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.brown),
+                    strokeWidth: 3,
+                  ),
+                ));
           }
         });
+  }
+
+  List<Widget> buildTankTypesConfiguration() {
+    List<Widget> results = [];
+    Constants.gTankTypesMap!.forEach((name, symbol) {
+      results.add(Container(
+          width: displayWidth(context) * 0.8,
+          child: Card(
+            color: Colors.black12,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: displayWidth(context) * 0.2,
+                    child: Image(
+                      image: AssetImage(
+                          Constants.gTankImagesMap[name]!),
+                          // 'images/tanks/base_vertical_cylinder.jpg'),
+                    ),
+                  ),
+                  Text('$name'),
+                ],
+              ))
+
+      )
+      );
+    });
+    return results;
+  }
+
+  Widget buildTankTypeDimensionColumn(String tankType) {
+    List<Widget> list = <Widget>[];
+    if (tankType == '') {
+      tankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+    }
+
+    Constants.gTankTypesMap[tankType]!.forEach((name, symbol) {
+      list.add(Container(child: Text('$name: 200cm')));
+    });
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: list,
+    );
+  }
+
+
+
+  Column buildDeviceDescription(WeatherHistory weatherHistory) {
+    return Column(
+      children: [
+        // Center(
+        //   child: Container(
+        //     child: Row(
+        //       mainAxisSize: MainAxisSize.min,
+        //       mainAxisAlignment: MainAxisAlignment.end,
+        //       crossAxisAlignment: CrossAxisAlignment.center,
+        //       children: [
+        //         Text('Device ', style: TextStyle( fontSize: 14, color: Colors.black45),),
+        //         Text('${device.name ?? device.uid}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+        //         Text(' Detail', style: TextStyle( fontSize: 14, color: Colors.black45),),
+        //       ],
+        //     ),
+        //   ),
+        // ),
+        Center(
+          child: Container(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'latest when ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${weatherHistory?.weatherData?.uid ?? 'no data'}',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Center(
+          child: Container(
+            // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
+            // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'battery voltage ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${weatherHistory?.weatherData?.readVoltage ?? 'no data'}',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                Text(
+                  ' volts',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   LineChartBarData tempLine(List<FlSpot> points) {
@@ -696,100 +917,122 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
   Card buildWorkingModeCard(BuildContext context) {
     return Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          child: Column(
-                            children: [
-                              IconButton(
-                                color: burstePressed ? Colors.lightGreen : Colors.grey,
-                                icon: const Icon(Icons.autorenew),
-                                tooltip: 'Continue read sensor value every short time period',
-                                onPressed: () {
-                                  setState(() {
-                                    burstePressed = !burstePressed;
-                                    requestPressed = false;
-                                    pollingPressed = false;
-                                    offlinePressed = false;
-                                  });
-                                },
-                              ),
-                              Text('Burst', style: burstePressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
-                            ],
-                          ),
-
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          child: Column(
-                            children: [
-                              IconButton(
-                                color: requestPressed ? Colors.lightGreen : Colors.grey,
-                                icon: const Icon(Icons.wifi_calling),
-                                tooltip: 'Read sensor by request',
-                                onPressed: () {
-                                  setState(() {
-                                    burstePressed = false;
-                                    requestPressed = !requestPressed;
-                                    pollingPressed = false;
-                                    offlinePressed = false;
-                                  });
-                                },
-                              ),
-                              Text('Request', style: requestPressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          child: Column(
-                            children: [
-                              IconButton(
-                                color: pollingPressed ? Colors.lightGreen : Colors.grey,
-                                icon: const Icon(Icons.battery_alert),
-                                tooltip: 'Read sensor value every long time period to safe battery life time',
-                                onPressed: () {
-                                  setState(() {
-                                    burstePressed = false;
-                                    requestPressed = false;
-                                    pollingPressed = !pollingPressed;
-                                    offlinePressed = false;
-                                  });
-                                },
-                              ),
-                              Text('Polling', style: pollingPressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          child: Column(
-                            children: [
-                              IconButton(
-                                color: offlinePressed ? Colors.lightGreen : Colors.grey,
-                                icon: const Icon(Icons.wifi_off),
-                                tooltip: 'Save read sensor value in "the Node" local memory',
-                                onPressed: () {
-                                  setState(() {
-                                    burstePressed = false;
-                                    requestPressed = false;
-                                    pollingPressed = false;
-                                    offlinePressed = !offlinePressed;
-                                  });
-                                },
-                              ),
-                              Text('Offline', style: offlinePressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              child: Column(
+                children: [
+                  IconButton(
+                    color: burstePressed ? Colors.lightGreen : Colors.grey,
+                    icon: const Icon(Icons.autorenew),
+                    tooltip:
+                        'Continue read sensor value every short time period',
+                    onPressed: () {
+                      setState(() {
+                        burstePressed = !burstePressed;
+                        requestPressed = false;
+                        pollingPressed = false;
+                        offlinePressed = false;
+                      });
+                    },
                   ),
-                );
+                  Text(
+                    'Burst',
+                    style: burstePressed
+                        ? Theme.of(context).textTheme.subtitle2
+                        : Theme.of(context).textTheme.subtitle1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              child: Column(
+                children: [
+                  IconButton(
+                    color: requestPressed ? Colors.lightGreen : Colors.grey,
+                    icon: const Icon(Icons.wifi_calling),
+                    tooltip: 'Read sensor by request',
+                    onPressed: () {
+                      setState(() {
+                        burstePressed = false;
+                        requestPressed = !requestPressed;
+                        pollingPressed = false;
+                        offlinePressed = false;
+                      });
+                    },
+                  ),
+                  Text(
+                    'Request',
+                    style: requestPressed
+                        ? Theme.of(context).textTheme.subtitle2
+                        : Theme.of(context).textTheme.subtitle1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              child: Column(
+                children: [
+                  IconButton(
+                    color: pollingPressed ? Colors.lightGreen : Colors.grey,
+                    icon: const Icon(Icons.battery_alert),
+                    tooltip:
+                        'Read sensor value every long time period to safe battery life time',
+                    onPressed: () {
+                      setState(() {
+                        burstePressed = false;
+                        requestPressed = false;
+                        pollingPressed = !pollingPressed;
+                        offlinePressed = false;
+                      });
+                    },
+                  ),
+                  Text(
+                    'Polling',
+                    style: pollingPressed
+                        ? Theme.of(context).textTheme.subtitle2
+                        : Theme.of(context).textTheme.subtitle1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              child: Column(
+                children: [
+                  IconButton(
+                    color: offlinePressed ? Colors.lightGreen : Colors.grey,
+                    icon: const Icon(Icons.wifi_off),
+                    tooltip:
+                        'Save read sensor value in "the Node" local memory',
+                    onPressed: () {
+                      setState(() {
+                        burstePressed = false;
+                        requestPressed = false;
+                        pollingPressed = false;
+                        offlinePressed = !offlinePressed;
+                      });
+                    },
+                  ),
+                  Text(
+                    'Offline',
+                    style: offlinePressed
+                        ? Theme.of(context).textTheme.subtitle2
+                        : Theme.of(context).textTheme.subtitle1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Card buildReadingIntervalCard(BuildContext context) {
@@ -802,26 +1045,34 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
           Expanded(
             child: GestureDetector(
               onTap: () {
-                    setState(() {
-                      sec10Pressed = !sec10Pressed;
-                      sec30Pressed = false;
-                      min1Pressed = false;
-                      min5Pressed = false;
-                      min30Pressed = false;
-                      hour1Pressed = false;
-                      hour2Pressed = false;
-                      hour3Pressed = false;
-                      hour4Pressed = false;
+                setState(() {
+                  sec10Pressed = !sec10Pressed;
+                  sec30Pressed = false;
+                  min1Pressed = false;
+                  min5Pressed = false;
+                  min30Pressed = false;
+                  hour1Pressed = false;
+                  hour2Pressed = false;
+                  hour3Pressed = false;
+                  hour4Pressed = false;
 
-                      selectedInterval = 10000;
-                      updateReadingInterval();
-                    });
+                  selectedInterval = 10000;
+                  updateReadingInterval();
+                });
               },
               child: Container(
                 child: Column(
                   children: [
-                    Text('10', style: sec10Pressed ? activeStyle : inactiveStyle,),
-                    Text('sec', style: sec10Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '10',
+                      style: sec10Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'sec',
+                      style: sec10Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -848,8 +1099,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('30', style: sec30Pressed ? activeStyle : inactiveStyle,),
-                    Text('sec', style: sec30Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '30',
+                      style: sec30Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'sec',
+                      style: sec30Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -876,8 +1135,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('1', style: min1Pressed ? activeStyle : inactiveStyle,),
-                    Text('min', style: min1Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '1',
+                      style: min1Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'min',
+                      style: min1Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -904,8 +1171,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('5', style: min5Pressed ? activeStyle : inactiveStyle,),
-                    Text('min', style: min5Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '5',
+                      style: min5Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'min',
+                      style: min5Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -932,8 +1207,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('30', style: min30Pressed ? activeStyle : inactiveStyle,),
-                    Text('min', style: min30Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '30',
+                      style: min30Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'min',
+                      style: min30Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -960,8 +1243,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('1', style: hour1Pressed ? activeStyle : inactiveStyle,),
-                    Text('hour', style: hour1Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '1',
+                      style: hour1Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'hour',
+                      style: hour1Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -988,8 +1279,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('2', style: hour2Pressed ? activeStyle : inactiveStyle,),
-                    Text('hour', style: hour2Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '2',
+                      style: hour2Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'hour',
+                      style: hour2Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -1016,8 +1315,16 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('3', style: hour3Pressed ? activeStyle : inactiveStyle,),
-                    Text('hour', style: hour3Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '3',
+                      style: hour3Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'hour',
+                      style: hour3Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
@@ -1044,14 +1351,21 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               child: Container(
                 child: Column(
                   children: [
-                    Text('4', style: hour4Pressed ? activeStyle : inactiveStyle,),
-                    Text('hour', style: hour4Pressed ? Theme.of(context).textTheme.subtitle2 : Theme.of(context).textTheme.subtitle1,),
+                    Text(
+                      '4',
+                      style: hour4Pressed ? activeStyle : inactiveStyle,
+                    ),
+                    Text(
+                      'hour',
+                      style: hour4Pressed
+                          ? Theme.of(context).textTheme.subtitle2
+                          : Theme.of(context).textTheme.subtitle1,
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -1064,35 +1378,37 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   Future<void> updateReadingInterval() async {
     // update reading interval in cloud database
     // deviceDatabase.updateDevice(device);
-    print('update reading interval in cloud database - users/${user.uid}/devices/${device.uid}');
+    print(
+        'update reading interval in cloud database - users/${user.uid}/devices/${device.uid}');
     var deviceRef = FirebaseDatabase.instance
         .ref()
         .child('users/${user.uid}/devices/${device.uid}')
         .update({
-      // 'name':  device.name,
-      'readingInterval': selectedInterval,
-    }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
+          // 'name':  device.name,
+          'readingInterval': selectedInterval,
+        })
+        .onError((error, stackTrace) =>
+            print('updateNotificationSettings error=${error.toString()}'))
         .whenComplete(() {
-      print('updated notification settings success.');
-      showDialog(
-          context: context,
-          builder: (_) => CupertinoAlertDialog(
-            title: Text("Update Successfully"),
-            content: Text("Update reading interval settings is successfully."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("OK"),
-                onPressed: () {
-                  // Navigator.pop(context);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-          barrierDismissible: false
-      );
-
-    });
+          print('updated notification settings success.');
+          showDialog(
+              context: context,
+              builder: (_) => CupertinoAlertDialog(
+                    title: Text("Update Successfully"),
+                    content: Text(
+                        "Update reading interval settings is successfully."),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text("OK"),
+                        onPressed: () {
+                          // Navigator.pop(context);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+              barrierDismissible: false);
+        });
 
     // // Hostname on device detail page
     // String hostName = '';
@@ -1127,46 +1443,55 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
    */
   Future<void> updateNotificationSettings() async {
     // update notification settings in cloud database
-    print('update notification settings in cloud database - users/${user.uid}/devices/${device.uid}/notification');
+    print(
+        'update notification settings in cloud database - users/${user.uid}/devices/${device.uid}/notification');
     var deviceRef = FirebaseDatabase.instance
         .ref()
         .child('users/${user.uid}/devices/${device.uid}/notification')
         .update({
-      // 'name':  device.name,
-      'notifyHumidLower': (this.notificationDialog.notifyHumidLower == 0) ? this.notification.notifyHumidLower : this.notificationDialog.notifyHumidLower,
-      'notifyHumidHigher': (this.notificationDialog.notifyHumidHigher == 0) ? this.notification.notifyHumidHigher : this.notificationDialog.notifyHumidHigher,
-      'notifyTempLower': (this.notificationDialog.notifyTempLower == 0) ? this.notification.notifyTempLower : this.notificationDialog.notifyTempLower,
-      'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0) ? this.notification.notifyTempHigher : this.notificationDialog.notifyTempHigher,
-      'notifyEmail': this.notificationDialog.notifyEmail,
-      'isSendNotify': this.notification.isSendNotify,
-    }).onError((error, stackTrace) => print('updateNotificationSettings error=${error.toString()}'))
-    .whenComplete(() {
-      print('updated notification settings success.');
-      showDialog(
-          context: context,
-          builder: (_) => CupertinoAlertDialog(
-            title: Text("Update Successfully"),
-            content: Text("Update notification settings is successfully."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("OK"),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-          barrierDismissible: false
-      );
-
-    });
+          // 'name':  device.name,
+          'notifyHumidLower': (this.notificationDialog.notifyHumidLower == 0)
+              ? this.notification.notifyHumidLower
+              : this.notificationDialog.notifyHumidLower,
+          'notifyHumidHigher': (this.notificationDialog.notifyHumidHigher == 0)
+              ? this.notification.notifyHumidHigher
+              : this.notificationDialog.notifyHumidHigher,
+          'notifyTempLower': (this.notificationDialog.notifyTempLower == 0)
+              ? this.notification.notifyTempLower
+              : this.notificationDialog.notifyTempLower,
+          'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0)
+              ? this.notification.notifyTempHigher
+              : this.notificationDialog.notifyTempHigher,
+          'notifyEmail': this.notificationDialog.notifyEmail,
+          'isSendNotify': this.notification.isSendNotify,
+        })
+        .onError((error, stackTrace) =>
+            print('updateNotificationSettings error=${error.toString()}'))
+        .whenComplete(() {
+          print('updated notification settings success.');
+          showDialog(
+              context: context,
+              builder: (_) => CupertinoAlertDialog(
+                    title: Text("Update Successfully"),
+                    content:
+                        Text("Update notification settings is successfully."),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text("OK"),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+              barrierDismissible: false);
+        });
 
     return;
   }
 
   Future<List<WeatherData>> getLast10Histories() async {
-
     final onceHistoriesSnapshot = await FirebaseDatabase.instance
         .ref()
         .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
@@ -1178,7 +1503,7 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
 
     List<WeatherData> histories = [];
 
-    if(onceHistoriesSnapshot.exists) {
+    if (onceHistoriesSnapshot.exists) {
       histories.clear();
       tempPoints.clear();
       humidPoints.clear();
@@ -1191,33 +1516,33 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
         print('key=${key}');
         print('temperature=[${weatherValues['temperature']}]');
 
-        tempPoints.add(FlSpot(xValue, globals.parseDouble(weatherValues['temperature'] ?? 0)));
-        humidPoints.add(FlSpot(xValue, globals.parseDouble(weatherValues['humidity'] ?? 0)));
+        tempPoints.add(FlSpot(
+            xValue, globals.parseDouble(weatherValues['temperature'] ?? 0)));
+        humidPoints.add(FlSpot(
+            xValue, globals.parseDouble(weatherValues['humidity'] ?? 0)));
         dateTimeValues.add(weatherValues['uid'] ?? '');
 
         xValue += step;
 
         histories.add(WeatherData(
-            uid: weatherValues['uid'] ?? '',
-            deviceId: weatherValues['deviceId'] ?? '',
-            humidity: globals.parseDouble(weatherValues['humidity'] ?? 0),
-            temperature: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            readVoltage: globals.parseDouble(weatherValues['readVoltage'] ?? 0),
-            // add TOF10120(Water level) sensor data xxz
-            wFilledDepth: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            wHeight: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            wWidth: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            wDiameter: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            wSideLength: globals.parseDouble(weatherValues['temperature'] ?? 0),
-            wLength: globals.parseDouble(weatherValues['temperature'] ?? 0),
-
+          uid: weatherValues['uid'] ?? '',
+          deviceId: weatherValues['deviceId'] ?? '',
+          humidity: globals.parseDouble(weatherValues['humidity'] ?? 0),
+          temperature: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          readVoltage: globals.parseDouble(weatherValues['readVoltage'] ?? 0),
+          // add TOF10120(Water level) sensor data xxz
+          wFilledDepth: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          wHeight: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          wWidth: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          wDiameter: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          wSideLength: globals.parseDouble(weatherValues['temperature'] ?? 0),
+          wLength: globals.parseDouble(weatherValues['temperature'] ?? 0),
         ));
       });
 
       tempPoints.sort((a, b) => a.x.compareTo(b.x));
       humidPoints.sort((a, b) => a.x.compareTo(b.x));
       dateTimeValues.sort((a, b) => a.compareTo(b));
-
     } else {
       histories.clear();
       tempPoints.add(FlSpot(xValue, 0));
@@ -1232,157 +1557,166 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   @override
   void afterFirstLayout(BuildContext context) {
     getLast10Histories();
-    switch(device.readingInterval) {
-      case Constants.INTERVAL_SECOND_10: {
-        setState(() {
-          sec10Pressed = true;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+    switch (device.readingInterval) {
+      case Constants.INTERVAL_SECOND_10:
+        {
+          setState(() {
+            sec10Pressed = true;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_SECOND_30: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = true;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_SECOND_30:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = true;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_MINUTE_1: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = true;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_MINUTE_1:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = true;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_MINUTE_5: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = true;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_MINUTE_5:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = true;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_MINUTE_30: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = true;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_MINUTE_30:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = true;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_HOUR_1: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = true;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_HOUR_1:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = true;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_HOUR_2: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = true;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_HOUR_2:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = true;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_HOUR_3: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = true;
-          hour4Pressed = false;
-        });
-      }
-      break;
+      case Constants.INTERVAL_HOUR_3:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = true;
+            hour4Pressed = false;
+          });
+        }
+        break;
 
-      case Constants.INTERVAL_HOUR_4: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = false;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = true;
-        });
-      }
-      break;
+      case Constants.INTERVAL_HOUR_4:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = false;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = true;
+          });
+        }
+        break;
 
-      default: {
-        setState(() {
-          sec10Pressed = false;
-          sec30Pressed = true;
-          min1Pressed = false;
-          min5Pressed = false;
-          min30Pressed = false;
-          hour1Pressed = false;
-          hour2Pressed = false;
-          hour3Pressed = false;
-          hour4Pressed = false;
-        });
-      }
-      break;
-
+      default:
+        {
+          setState(() {
+            sec10Pressed = false;
+            sec30Pressed = true;
+            min1Pressed = false;
+            min5Pressed = false;
+            min30Pressed = false;
+            hour1Pressed = false;
+            hour2Pressed = false;
+            hour3Pressed = false;
+            hour4Pressed = false;
+          });
+        }
+        break;
     }
     // switch(device.mode) {
     //   case Constants.MODE_BURST: {
@@ -1428,29 +1762,247 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
     // }
   }
 
-  Future<Notify.Notification?> openNotificationInputDialog() => showDialog<Notify.Notification>(
-
+  Future<Notify.Notification?> openTankConfigurationDialog() {
+    return showDialog<Notify.Notification>(
       context: context,
-      builder: (context) => AlertDialog(
-        insetPadding: EdgeInsets.only(top: 2.0, left: 4.0, right: 4.0, ),
-        title: Container(
-          alignment: Alignment.topCenter,
-            child: Text('Notification')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              StatefulBuilder(
-                builder: (BuildContext context, StateSetter setState) {
+      builder: (context) =>
+          AlertDialog(
+            insetPadding: EdgeInsets.only(
+              top: 2.0,
+              left: 4.0,
+              right: 4.0,
+            ),
+            title: Container(
+                alignment: Alignment.topCenter,
+                child: Text('Tank Configuration')),
+            content: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                padding: EdgeInsets.symmetric(),
+                color: Colors.limeAccent,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  children: [
+                    TankDimensionConfig(device: this.device, selectedTankType: mSelectedTankType,),
+                    // Expanded(
+                    //   child: ListWheelScrollView(
+                    //     itemExtent: displayWidth(context) * 0.3,
+                    //     children: buildTankTypesConfiguration(),
+                    //     // children: items,
+                    //     // value between 0 --> 0.01
+                    //     perspective: 0.009,
+                    //     diameterRatio: 1.5,
+                    //     // default 2.0
+                    //     // useMagnifier: true,
+                    //     magnification: 1.1,
+                    //     physics: FixedExtentScrollPhysics(),
+                    //     onSelectedItemChanged: (index) {
+                    //       print('index====$index');
+                    //       setState(() {
+                    //         mSelectedTankType =
+                    //             Constants.gTankTypesMap!.keys.elementAt(index);
+                    //         switch (mSelectedTankType) {
+                    //           case Constants.TANK_TYPE_RECTANGLE:
+                    //           case Constants.TANK_TYPE_HORIZONTAL_OVAL:
+                    //           case Constants.TANK_TYPE_VERTICAL_OVAL:
+                    //           case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
+                    //             {
+                    //               mVisibilityHWL = true;
+                    //               mVisibilityLD = false;
+                    //               break;
+                    //             }
+                    //           case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+                    //           case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
+                    //           case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
+                    //           case Constants.TANK_TYPE_VERTICAL_CAPSULE:
+                    //           case Constants
+                    //               .TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
+                    //           case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
+                    //             {
+                    //               mVisibilityHWL = false;
+                    //               mVisibilityLD = true;
+                    //               break;
+                    //             }
+                    //         }
+                    //
+                    //         // toast('index====$index | mTankType=$mSelectedTankType | mVisibilityHWL=$mVisibilityHWL');
+                    //       });
+                    //     },
+                    //   ),
+                    // ),
+
+                    // mVisibilityHWL ?
+                    //   buildTankTypeDimensionForm(mSelectedTankType) : Container(),
+                    // Text('C mSelectedTankType=$mSelectedTankType'),
+                    // Visibility(
+                    //   visible: mVisibilityLD,
+                    //   // maintainState: true,
+                    //   child: Text('mSelectedTankType=$mSelectedTankType'),
+                    //   // child: Image(
+                    //   //   image: AssetImage(
+                    //   //       'images/tanks/base_vertical_cylinder.jpg'),
+                    //   // ),
+                    //   // child: buildTankTypeDimensionForm(mSelectedTankType)
+                    // ),
+
+                    // Card(
+                    //     color: Colors.black12,
+                    //     child: Column(
+                    //       mainAxisSize: MainAxisSize.min,
+                    //       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //       crossAxisAlignment: CrossAxisAlignment.center,
+                    //       children: [
+                    //         Container(
+                    //           width: displayWidth(context) * 0.8,
+                    //           child: TextFormField(
+                    //             initialValue: this.notification.notifyEmail,
+                    //             keyboardType: TextInputType.number,
+                    //             // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
+                    //             validator: (value) {
+                    //               if (value == null || value.isEmpty) {
+                    //                 return 'Please enter some text';
+                    //               } else {
+                    //                 if (!isEmail(value!)) {
+                    //                   return 'Invalid Email';
+                    //                 }
+                    //                 setState(() {
+                    //                   this.notificationDialog.notifyEmail = value;
+                    //                 });
+                    //
+                    //                 return null;
+                    //               }
+                    //             },
+                    //             // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
+                    //             autofocus: false,
+                    //             decoration: InputDecoration(
+                    //               label: Text(
+                    //                 'Email:',
+                    //                 style: TextStyle(fontSize: 16, color: Colors.black45),
+                    //               ),
+                    //               // labelText: Text('Email:'),
+                    //               hintText: 'Enter your email address',
+                    //             ),
+                    //             // controller: name_controller,
+                    //             // onChanged: (value) {
+                    //             //   setState(() {
+                    //             //     this.device.notifyEmail = value;
+                    //             //   });
+                    //             // },
+                    //             // onSubmitted: (_) => submitNotificationSettings(),
+                    //           ),
+                    //         ),
+                    //         Text('$name'),
+                    //       ],
+                    //     )),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('CLOSE')),
+              TextButton(
+                // onPressed: submitNotificationSettings,
+                  onPressed: () {
+                    // Validate returns true if the form is valid, or false otherwise.
+                    if (_emailFormKey.currentState!.validate()) {
+                      // If the form is valid, display a snackbar. In the real world,
+                      // you'd often call a server or save the information in a database.
+                      updateNotificationSettings();
+
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(content: Text('Updated Data')),
+                      // );
+
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (_) =>
+                              CupertinoAlertDialog(
+                                title: Text("Invalid Email"),
+                                content: Text(
+                                    "Please enter the correct email format.\ And submit again."),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: Text("OK"),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
+                          barrierDismissible: false);
+                    }
+                  },
+                  child: Text('SUBMIT')),
+            ],
+          ),
+    );
+  }
+
+  // Widget _buildListItem(BuildContext context, int index) {
+  //   if (index == data.length)
+  //     return Center(child: CircularProgressIndicator(),);
+  //
+  //   //horizontal
+  //   return Container(
+  //     width: 150,
+  //     child: Column(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: <Widget>[
+  //         Container(
+  //           height: 200,
+  //           width: 150,
+  //           color: Colors.lightBlueAccent,
+  //           child: Text("i:$index\n${data[index]}"),
+  //         )
+  //       ],
+  //     ),
+  //   );
+  // }
+  //
+  // void _onItemFocus(int index) {
+  //   print(index);
+  //   setState(() {
+  //     _focusedIndex = index;
+  //   });
+  // }
+
+  Future<Notify.Notification?> openNotificationInputDialog() =>
+      showDialog<Notify.Notification>(
+        context: context,
+        builder: (context) => AlertDialog(
+          insetPadding: EdgeInsets.only(
+            top: 2.0,
+            left: 4.0,
+            right: 4.0,
+          ),
+          title: Container(
+              alignment: Alignment.topCenter, child: Text('Notification')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
                   return Container(
                     padding: EdgeInsets.only(left: 0.0, right: 0.0),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black26)),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black26)),
                     child: CheckboxListTile(
-
-                      title: Text('Send notification email', style: TextStyle(fontSize: 16, color: Colors.black87),),
-                      subtitle: Text('Enable send the notification email when it meet condition.', style: TextStyle(fontSize: 12, color: Colors.black38),),
+                      title: Text(
+                        'Send notification email',
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                      subtitle: Text(
+                        'Enable send the notification email when it meet condition.',
+                        style: TextStyle(fontSize: 12, color: Colors.black38),
+                      ),
                       secondary: Icon(Icons.mail_outline),
                       controlAffinity: ListTileControlAffinity.trailing,
                       value: this.notification.isSendNotify,
@@ -1466,112 +2018,117 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                       },
                       activeColor: Colors.lightGreen,
                       checkColor: Colors.yellow,
-
                     ),
                   );
-                }
-              ),
+                }),
 
-              // Text('will send to', style: TextStyle( fontSize: 16, color: Colors.black45),),
-              Form(
-                key: _emailFormKey,
-                child: TextFormField(
-                  initialValue: this.notification.notifyEmail,
-                  keyboardType: TextInputType.emailAddress,
-                  // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
-                  validator: (value) {
-                    if(value == null || value.isEmpty) {
-                      return 'Please enter some text';
-                    } else {
-                      if(!isEmail(value!)) {
-                        return 'Invalid Email';
+                // Text('will send to', style: TextStyle( fontSize: 16, color: Colors.black45),),
+                Form(
+                  key: _emailFormKey,
+                  child: TextFormField(
+                    initialValue: this.notification.notifyEmail,
+                    keyboardType: TextInputType.emailAddress,
+                    // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some text';
+                      } else {
+                        if (!isEmail(value!)) {
+                          return 'Invalid Email';
+                        }
+                        setState(() {
+                          this.notificationDialog.notifyEmail = value;
+                        });
+
+                        return null;
                       }
-                      setState(() {
-                        this.notificationDialog.notifyEmail = value;
-                      });
-
-                      return null;
-                    }
-                  },
-                  // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
-                  autofocus: false,
-                  decoration: InputDecoration(
-                    label: Text('Email:', style: TextStyle( fontSize: 16, color: Colors.black45),),
-                    // labelText: Text('Email:'),
-                    hintText: 'Enter your email address',
-                  ),
-                  // controller: name_controller,
-                  // onChanged: (value) {
-                  //   setState(() {
-                  //     this.device.notifyEmail = value;
-                  //   });
-                  // },
-                  // onSubmitted: (_) => submitNotificationSettings(),
-                ),
-              ),
-              SizedBox(height: 16,),
-              Text('when', style: TextStyle( fontSize: 16, color: Colors.black45),),
-              SizedBox(height: 16,),
-              buildTemperatureNotifyDialog(),
-              SizedBox(height: 8,),
-              buildHumidityNotifyDialog(),
-
-              // buildCustomPicker(),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('CLOSE')
-          ),
-          TextButton(
-              // onPressed: submitNotificationSettings,
-            onPressed: () {
-              // Validate returns true if the form is valid, or false otherwise.
-              if (_emailFormKey.currentState!.validate()) {
-                // If the form is valid, display a snackbar. In the real world,
-                // you'd often call a server or save the information in a database.
-                updateNotificationSettings();
-
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(content: Text('Updated Data')),
-                // );
-
-              } else {
-                showDialog(
-                    context: context,
-                    builder: (_) => CupertinoAlertDialog(
-                      title: Text("Invalid Email"),
-                      content: Text("Please enter the correct email format.\ And submit again."),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: Text("OK"),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
+                    },
+                    // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
+                    autofocus: false,
+                    decoration: InputDecoration(
+                      label: Text(
+                        'Email:',
+                        style: TextStyle(fontSize: 16, color: Colors.black45),
+                      ),
+                      // labelText: Text('Email:'),
+                      hintText: 'Enter your email address',
                     ),
-                    barrierDismissible: false
-                );
-              }
+                    // controller: name_controller,
+                    // onChanged: (value) {
+                    //   setState(() {
+                    //     this.device.notifyEmail = value;
+                    //   });
+                    // },
+                    // onSubmitted: (_) => submitNotificationSettings(),
+                  ),
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                Text(
+                  'when',
+                  style: TextStyle(fontSize: 16, color: Colors.black45),
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                buildTemperatureNotifyDialog(),
+                SizedBox(
+                  height: 8,
+                ),
+                buildHumidityNotifyDialog(),
 
-            },
-            child: Text('SUBMIT')
+                // buildCustomPicker(),
+              ],
+            ),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('CLOSE')),
+            TextButton(
+                // onPressed: submitNotificationSettings,
+                onPressed: () {
+                  // Validate returns true if the form is valid, or false otherwise.
+                  if (_emailFormKey.currentState!.validate()) {
+                    // If the form is valid, display a snackbar. In the real world,
+                    // you'd often call a server or save the information in a database.
+                    updateNotificationSettings();
 
-  );
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Updated Data')),
+                    // );
+
+                  } else {
+                    showDialog(
+                        context: context,
+                        builder: (_) => CupertinoAlertDialog(
+                              title: Text("Invalid Email"),
+                              content: Text(
+                                  "Please enter the correct email format.\ And submit again."),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: Text("OK"),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            ),
+                        barrierDismissible: false);
+                  }
+                },
+                child: Text('SUBMIT')),
+          ],
+        ),
+      );
 
   void submitNotificationSettings() {
     // Navigator.of(context).pop(name_controller.text);
     //
     // name_controller.clear();
-
   }
 
   // Widget buildCustomPicker() => SizedBox(
@@ -1602,112 +2159,116 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
   //   ),
   // );
 
-
   Widget buildTemperatureNumberPicker(int pickerType) => SizedBox(
-    height: 80,
-    width: 50,
-    child: CupertinoPicker(
-      // backgroundColor: Colors.limeAccent,
-      itemExtent: 48,
-      diameterRatio: 1.5,
-      looping: true,
-      useMagnifier: true,
-      magnification: 1.2,
-      scrollController: FixedExtentScrollController(initialItem: initScrollIndex(pickerType)) ,
-      // onSelectedItemChanged: (index) => setState(() => this.index = index),
-      // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
-      onSelectedItemChanged: (index) => setState(() {
-        switch(pickerType) {
-          case Constants.TEMP_LOWER: {
-            this.notificationDialog.notifyTempLower = double.parse(pickerValues[index].toString());
-            break;
-          }
-          case Constants.TEMP_HIGHER: {
-            this.notificationDialog.notifyTempHigher = double.parse(pickerValues[index].toString());
-            break;
-          }
-          default: {
-            this.notificationDialog.notifyTempLower = double.parse(pickerValues[index].toString());
-            break;
-          }
-        }
+        height: 80,
+        width: 50,
+        child: CupertinoPicker(
+          // backgroundColor: Colors.limeAccent,
+          itemExtent: 48,
+          diameterRatio: 1.5,
+          looping: true,
+          useMagnifier: true,
+          magnification: 1.2,
+          scrollController: FixedExtentScrollController(
+              initialItem: initScrollIndex(pickerType)),
+          // onSelectedItemChanged: (index) => setState(() => this.index = index),
+          // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+          onSelectedItemChanged: (index) => setState(() {
+            switch (pickerType) {
+              case Constants.TEMP_LOWER:
+                {
+                  this.notificationDialog.notifyTempLower =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+              case Constants.TEMP_HIGHER:
+                {
+                  this.notificationDialog.notifyTempHigher =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+              default:
+                {
+                  this.notificationDialog.notifyTempLower =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+            }
+          }),
+          // onSelectedItemChanged: (int index) => setState(() {
+          //   this.selectedIndex = index;
+          //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+          //   isSelected = this.selectedIndex == index;
+          //   print('isSelected=${isSelected}');
+          //
+          // }),
+          selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+            background: Colors.orangeAccent.withOpacity(0.10),
+          ),
 
-
-      }),
-      // onSelectedItemChanged: (int index) => setState(() {
-      //   this.selectedIndex = index;
-      //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
-      //   isSelected = this.selectedIndex == index;
-      //   print('isSelected=${isSelected}');
-      //
-      // }),
-      selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-        background: Colors.orangeAccent.withOpacity(0.10),
-      ),
-
-      children: Utils.modelBuilder<String> (
-        pickerValues,
-        (index, value) {
-          // final color = isSelected ? Colors.pink : Colors.black45;
-          // final isSelected = this.selectedIndex == index;
-          // final color = isSelected ? Colors.pink : Colors.black;
-          return Center(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16),
-              // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
-            ),
-          );
-        }
-      ),
-    ),
-  );
+          children: Utils.modelBuilder<String>(pickerValues, (index, value) {
+            // final color = isSelected ? Colors.pink : Colors.black45;
+            // final isSelected = this.selectedIndex == index;
+            // final color = isSelected ? Colors.pink : Colors.black;
+            return Center(
+              child: Text(
+                value,
+                style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16),
+                // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+              ),
+            );
+          }),
+        ),
+      );
 
   Widget buildHumidityNumberPicker(int pickerType) => SizedBox(
-    height: 80,
-    width: 50,
-    child: CupertinoPicker(
-      // backgroundColor: Colors.limeAccent,
-      itemExtent: 48,
-      diameterRatio: 1.5,
-      looping: true,
-      useMagnifier: true,
-      magnification: 1.2,
-      scrollController: FixedExtentScrollController(initialItem: initScrollIndex(pickerType)) ,
-      // onSelectedItemChanged: (index) => setState(() => this.index = index),
-      // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
-      onSelectedItemChanged: (index) => setState(() {
-        switch(pickerType) {
-          case Constants.HUMID_LOWER: {
-            this.notificationDialog.notifyHumidLower = double.parse(pickerValues[index].toString());
-            break;
-          }
-          case Constants.HUMID_HIGHER: {
-            this.notificationDialog.notifyHumidHigher = double.parse(pickerValues[index].toString());
-            break;
-          }
-          default: {
-            this.notificationDialog.notifyHumidHigher = double.parse(pickerValues[index].toString());
-            break;
-          }
-        }
+        height: 80,
+        width: 50,
+        child: CupertinoPicker(
+          // backgroundColor: Colors.limeAccent,
+          itemExtent: 48,
+          diameterRatio: 1.5,
+          looping: true,
+          useMagnifier: true,
+          magnification: 1.2,
+          scrollController: FixedExtentScrollController(
+              initialItem: initScrollIndex(pickerType)),
+          // onSelectedItemChanged: (index) => setState(() => this.index = index),
+          // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+          onSelectedItemChanged: (index) => setState(() {
+            switch (pickerType) {
+              case Constants.HUMID_LOWER:
+                {
+                  this.notificationDialog.notifyHumidLower =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+              case Constants.HUMID_HIGHER:
+                {
+                  this.notificationDialog.notifyHumidHigher =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+              default:
+                {
+                  this.notificationDialog.notifyHumidHigher =
+                      double.parse(pickerValues[index].toString());
+                  break;
+                }
+            }
+          }),
+          // onSelectedItemChanged: (int index) => setState(() {
+          //   this.selectedIndex = index;
+          //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+          //   isSelected = this.selectedIndex == index;
+          //   print('isSelected=${isSelected}');
+          //
+          // }),
+          selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+            background: Colors.lightBlue.withOpacity(0.10),
+          ),
 
-
-      }),
-      // onSelectedItemChanged: (int index) => setState(() {
-      //   this.selectedIndex = index;
-      //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
-      //   isSelected = this.selectedIndex == index;
-      //   print('isSelected=${isSelected}');
-      //
-      // }),
-      selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-        background: Colors.lightBlue.withOpacity(0.10),
-      ),
-
-      children: Utils.modelBuilder<String> (
-          pickerValues,
-              (index, value) {
+          children: Utils.modelBuilder<String>(pickerValues, (index, value) {
             // final color = isSelected ? Colors.pink : Colors.black45;
             // final isSelected = this.selectedIndex == index;
             // final color = isSelected ? Colors.pink : Colors.black;
@@ -1718,213 +2279,291 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                 // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
               ),
             );
-          }
-      ),
-    ),
-  );
+          }),
+        ),
+      );
 
   Widget buildTemperatureNotifyDialog() => SizedBox(
-    height: 100,
-    child: Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        height: 100,
+        child: Column(
           children: [
-            SizedBox(width: 50,),
-            Text('Lower than', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 20,),
-            Text('Higher than', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 4,),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                ),
+                Text(
+                  'Lower than',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Higher than',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Temperature',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 25,
+                ),
+                buildTemperatureNumberPicker(Constants.TEMP_LOWER),
+                Text(
+                  'or',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                buildTemperatureNumberPicker(Constants.TEMP_HIGHER),
+              ],
+            ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('Temperature', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 25,),
-            buildTemperatureNumberPicker(Constants.TEMP_LOWER),
-            Text('or', style: TextStyle(color: Colors.black45),),
-            buildTemperatureNumberPicker(Constants.TEMP_HIGHER),
-          ],
-        ),
-      ],
-    ),
 
-    // child: CupertinoPicker(
-    //   // backgroundColor: Colors.limeAccent,
-    //   itemExtent: 48,
-    //   diameterRatio: 1.5,
-    //   looping: true,
-    //   useMagnifier: true,
-    //   magnification: 1.2,
-    //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
-    //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
-    //   // onSelectedItemChanged: (int index) => setState(() {
-    //   //   this.selectedIndex = index;
-    //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
-    //   //   isSelected = this.selectedIndex == index;
-    //   //   print('isSelected=${isSelected}');
-    //   //
-    //   // }),
-    //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-    //     background: Colors.pink.withOpacity(0.10),
-    //   ),
-    //
-    //   children: Utils.modelBuilder<String> (
-    //       pickerValues,
-    //           (index, value) {
-    //         // final color = isSelected ? Colors.pink : Colors.black45;
-    //         // final isSelected = this.selectedIndex == index;
-    //         // final color = isSelected ? Colors.pink : Colors.black;
-    //         return Center(
-    //           child: Text(
-    //             value,
-    //             style: TextStyle(color: Colors.pink, fontSize: 16),
-    //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
-    //           ),
-    //         );
-    //       }
-    //   ),
-    // ),
-  );
+        // child: CupertinoPicker(
+        //   // backgroundColor: Colors.limeAccent,
+        //   itemExtent: 48,
+        //   diameterRatio: 1.5,
+        //   looping: true,
+        //   useMagnifier: true,
+        //   magnification: 1.2,
+        //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
+        //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+        //   // onSelectedItemChanged: (int index) => setState(() {
+        //   //   this.selectedIndex = index;
+        //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+        //   //   isSelected = this.selectedIndex == index;
+        //   //   print('isSelected=${isSelected}');
+        //   //
+        //   // }),
+        //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+        //     background: Colors.pink.withOpacity(0.10),
+        //   ),
+        //
+        //   children: Utils.modelBuilder<String> (
+        //       pickerValues,
+        //           (index, value) {
+        //         // final color = isSelected ? Colors.pink : Colors.black45;
+        //         // final isSelected = this.selectedIndex == index;
+        //         // final color = isSelected ? Colors.pink : Colors.black;
+        //         return Center(
+        //           child: Text(
+        //             value,
+        //             style: TextStyle(color: Colors.pink, fontSize: 16),
+        //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+        //           ),
+        //         );
+        //       }
+        //   ),
+        // ),
+      );
 
   Widget buildHumidityNotifyDialog() => SizedBox(
-    height: 100,
-    child: Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        height: 100,
+        child: Column(
           children: [
-            SizedBox(width: 50,),
-            Text('Lower than', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 20,),
-            Text('Higher than', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 4,),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                ),
+                Text(
+                  'Lower than',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Higher than',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Humidity',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                buildHumidityNumberPicker(Constants.HUMID_LOWER),
+                Text(
+                  'or',
+                  style: TextStyle(color: Colors.black45),
+                ),
+                buildHumidityNumberPicker(Constants.HUMID_HIGHER),
+              ],
+            ),
           ],
         ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text('Humidity', style: TextStyle(color: Colors.black45),),
-            SizedBox(width: 10,),
-            buildHumidityNumberPicker(Constants.HUMID_LOWER),
-            Text('or', style: TextStyle(color: Colors.black45),),
-            buildHumidityNumberPicker(Constants.HUMID_HIGHER),
-          ],
-        ),
-      ],
-    ),
 
-    // child: CupertinoPicker(
-    //   // backgroundColor: Colors.limeAccent,
-    //   itemExtent: 48,
-    //   diameterRatio: 1.5,
-    //   looping: true,
-    //   useMagnifier: true,
-    //   magnification: 1.2,
-    //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
-    //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
-    //   // onSelectedItemChanged: (int index) => setState(() {
-    //   //   this.selectedIndex = index;
-    //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
-    //   //   isSelected = this.selectedIndex == index;
-    //   //   print('isSelected=${isSelected}');
-    //   //
-    //   // }),
-    //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-    //     background: Colors.pink.withOpacity(0.10),
-    //   ),
-    //
-    //   children: Utils.modelBuilder<String> (
-    //       pickerValues,
-    //           (index, value) {
-    //         // final color = isSelected ? Colors.pink : Colors.black45;
-    //         // final isSelected = this.selectedIndex == index;
-    //         // final color = isSelected ? Colors.pink : Colors.black;
-    //         return Center(
-    //           child: Text(
-    //             value,
-    //             style: TextStyle(color: Colors.pink, fontSize: 16),
-    //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
-    //           ),
-    //         );
-    //       }
-    //   ),
-    // ),
-  );
+        // child: CupertinoPicker(
+        //   // backgroundColor: Colors.limeAccent,
+        //   itemExtent: 48,
+        //   diameterRatio: 1.5,
+        //   looping: true,
+        //   useMagnifier: true,
+        //   magnification: 1.2,
+        //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
+        //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+        //   // onSelectedItemChanged: (int index) => setState(() {
+        //   //   this.selectedIndex = index;
+        //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+        //   //   isSelected = this.selectedIndex == index;
+        //   //   print('isSelected=${isSelected}');
+        //   //
+        //   // }),
+        //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+        //     background: Colors.pink.withOpacity(0.10),
+        //   ),
+        //
+        //   children: Utils.modelBuilder<String> (
+        //       pickerValues,
+        //           (index, value) {
+        //         // final color = isSelected ? Colors.pink : Colors.black45;
+        //         // final isSelected = this.selectedIndex == index;
+        //         // final color = isSelected ? Colors.pink : Colors.black;
+        //         return Center(
+        //           child: Text(
+        //             value,
+        //             style: TextStyle(color: Colors.pink, fontSize: 16),
+        //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+        //           ),
+        //         );
+        //       }
+        //   ),
+        // ),
+      );
 
   int initScrollIndex(int pickerType) {
     int index = 0;
-    switch(pickerType) {
-      case Constants.HUMID_LOWER: {
-        index = this.notification.notifyHumidLower.toInt();
-        break;
-      }
-      case Constants.HUMID_HIGHER: {
-        index = this.notification.notifyHumidHigher.toInt();
-        break;
-      }
-      case Constants.TEMP_LOWER: {
-        index = this.notification.notifyTempLower.toInt();
-        break;
-      }
-      case Constants.TEMP_HIGHER: {
-        index = this.notification.notifyTempHigher.toInt();
-        break;
-      }
-      default: {
-        index = 0;
-        break;
-      }
+    switch (pickerType) {
+      case Constants.HUMID_LOWER:
+        {
+          index = this.notification.notifyHumidLower.toInt();
+          break;
+        }
+      case Constants.HUMID_HIGHER:
+        {
+          index = this.notification.notifyHumidHigher.toInt();
+          break;
+        }
+      case Constants.TEMP_LOWER:
+        {
+          index = this.notification.notifyTempLower.toInt();
+          break;
+        }
+      case Constants.TEMP_HIGHER:
+        {
+          index = this.notification.notifyTempHigher.toInt();
+          break;
+        }
+      default:
+        {
+          index = 0;
+          break;
+        }
     }
     return index;
   }
 
   Widget drawNotificationDetail() {
-    if(this.notification.isSendNotify) {
+    if (this.notification.isSendNotify) {
       return SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text('will send to', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            Text(
+              'will send to',
+              style: TextStyle(fontSize: 14, color: Colors.black45),
+            ),
             Text(
               this.notification.notifyEmail,
-              style: TextStyle( fontSize: 14, color: Colors.black87),
+              style: TextStyle(fontSize: 14, color: Colors.black87),
             ),
-            SizedBox(height: 16,),
-            Text('when', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            SizedBox(
+              height: 16,
+            ),
+            Text(
+              'when',
+              style: TextStyle(fontSize: 14, color: Colors.black45),
+            ),
             // SizedBox(height: 8,),
             Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('Temperature is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                Text('${this.notification.notifyTempLower}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                Text('${this.notification.notifyTempHigher}\u2103', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                Text(
+                  'Temperature is lower than ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${this.notification.notifyTempLower}\u2103',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                Text(
+                  ' or higher than ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${this.notification.notifyTempHigher}\u2103',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
               ],
             ),
-            SizedBox(height: 8,),
+            SizedBox(
+              height: 8,
+            ),
             Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('Humidity is lower than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                Text('${this.notification.notifyHumidLower}', style: TextStyle( fontSize: 14, color: Colors.black87),),
-                Text(' or higher than ', style: TextStyle( fontSize: 14, color: Colors.black45),),
-                Text('${this.notification.notifyHumidHigher}', style: TextStyle( fontSize: 14, color: Colors.black87),),
+                Text(
+                  'Humidity is lower than ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${this.notification.notifyHumidLower}',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                Text(
+                  ' or higher than ',
+                  style: TextStyle(fontSize: 14, color: Colors.black45),
+                ),
+                Text(
+                  '${this.notification.notifyHumidHigher}',
+                  style: TextStyle(fontSize: 14, color: Colors.black87),
+                ),
               ],
             ),
 
@@ -1939,13 +2578,15 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text('none', style: TextStyle( fontSize: 14, color: Colors.black45),),
+            Text(
+              'none',
+              style: TextStyle(fontSize: 14, color: Colors.black45),
+            ),
             // buildCustomPicker(),
           ],
         ),
       );
     }
-
   }
 
   Widget drawLineChart() {
@@ -1965,7 +2606,8 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
               LineChartData(
                 borderData: FlBorderData(
                     show: true,
-                    border: Border.all(color: const Color(0xff37434d), width: 1)),
+                    border:
+                        Border.all(color: const Color(0xff37434d), width: 1)),
                 minY: 0,
                 maxY: 100,
                 minX: tempPoints.first.x,
@@ -2004,7 +2646,6 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-
                       reservedSize: 38,
                     ),
                   ),
@@ -2041,6 +2682,281 @@ class _ShowDevicePageState extends State<ShowDevicePage> with AfterLayoutMixin<S
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+class TempAndHumidCircularWidget extends StatelessWidget {
+  const TempAndHumidCircularWidget({
+    Key? key,
+    required this.weatherHistory,
+    required this.headlineStyle,
+    required this.unitStyle,
+  }) : super(key: key);
+
+  final WeatherHistory weatherHistory;
+  final TextStyle? headlineStyle;
+  final TextStyle? unitStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 200,
+        height: 200,
+        decoration: new BoxDecoration(
+          color: Colors.lightGreen.shade800,
+          border: Border.all(color: Colors.green.shade400, width: 8.0),
+          borderRadius: new BorderRadius.all(Radius.circular(150.0)),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                  ),
+                  Container(
+                    child: Text(
+                      '${globals.formatNumber(weatherHistory.weatherData.temperature) ?? ''}',
+                      // '${globals.formatNumber(weatherHistory?.weatherData?.temperature is double ? weatherHistory?.weatherData?.temperature : 0)}',
+                      style: headlineStyle,
+                      // style: TextStyle(
+                      //   color: Colors.white,
+                      //   fontFamily: 'Kanit',
+                      //   fontWeight: FontWeight.w300,
+                      //   fontSize: 36.0,
+                      // ),
+                    ),
+                  ),
+                  Container(
+                    child: Text(
+                      'Temperature (\u2103)',
+                      style: unitStyle,
+                    ),
+                  ),
+                ],
+              ),
+              VerticalDivider(
+                color: Colors.grey.withOpacity(0.2),
+                thickness: 2,
+                // width: 10,
+                indent: 10,
+                endIndent: 10,
+              ),
+              Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                  ),
+                  Container(
+                    child: Text(
+                      '${globals.formatNumber(weatherHistory.weatherData.humidity) ?? ''}',
+                      style: headlineStyle,
+                      // style: TextStyle(
+                      //   color: Colors.white,
+                      //   fontFamily: 'Kanit',
+                      //   fontWeight: FontWeight.w300,
+                      //   fontSize: 36.0,
+                      // ),
+                    ),
+                  ),
+                  Container(
+                    child: Text(
+                      'Humidity (%)',
+                      style: unitStyle,
+                      // style: TextStyle(
+                      //   color: Colors.white,
+                      //   fontFamily: 'Kanit',
+                      //   fontWeight: FontWeight.w300,
+                      //   fontSize: 12.0,
+                      // ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TankDimensionConfig extends StatefulWidget {
+  final Device device;
+  final String selectedTankType;
+
+  const TankDimensionConfig({Key? key,
+    required this.device,
+    required this.selectedTankType,
+  }) : super(key: key);
+
+  @override
+  State<TankDimensionConfig> createState() => _TankDimensionConfigState();
+}
+
+class _TankDimensionConfigState extends State<TankDimensionConfig> {
+  String _SelectedTankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+  bool _VisibilityHWL = true;
+  bool _VisibilityLD = false;
+  int _InitScrollIndex = 0;
+
+  @override
+  void initState() {
+    int index = 0;
+    Constants.gTankTypesMap.keys.forEach((String key) {
+      if(key == widget.selectedTankType) {
+        _InitScrollIndex = index;
+      }
+      index++;
+    });
+    print('_InitScrollIndex=${_InitScrollIndex}');
+  }
+
+
+  Widget buildTankTypeDimensionForm(String tankType) {
+    List<Widget> list = <Widget>[];
+    if (tankType == '') {
+      tankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+    }
+
+    Constants.gTankTypesMap[tankType]!.forEach((name, symbol) {
+      list.add(Container(child: Text('$name: 200cm', style: TextStyle(color: Colors.black87),)));
+    });
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: list,
+    );
+  }
+
+  List<Widget> buildTankTypesConfiguration() {
+    List<Widget> results = [];
+    Constants.gTankTypesMap!.forEach((name, symbol) {
+      results.add(Container(
+          height: 300,//displayHeight(context) * 0.4, // MediaQuery.of(context).size.height / 2,
+          width: displayWidth(context) * 0.6,
+          color: Colors.deepOrangeAccent,
+          child: Card(
+              color: Colors.black12,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    // width: displayWidth(context) * 0.2,
+                    height: displayHeight(context) * 0.15,
+                    child: Image(
+                      image: AssetImage(
+                          Constants.gTankImagesMap[name]!),
+                      // 'images/tanks/base_vertical_cylinder.jpg'),
+                    ),
+                  ),
+                  // Text('$name'),
+                ],
+              ))
+
+      )
+      );
+    });
+    return results;
+  }
+
+  void changeVisibility() {
+    setState(() {
+      _VisibilityHWL = !_VisibilityHWL;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+    // Visibility(
+    //     visible: _VisibilityHWL,
+    //     child: Container(child: Text('A selectedTankType=${widget.selectedTankType}', style: TextStyle(color: Colors.black87)),))
+    //     ,
+    Container(child: Text('${_SelectedTankType}', style: TextStyle(color: Colors.black87, fontSize: 18)),),
+    // ElevatedButton(
+    //   child: Text('Swap'),
+    //   onPressed: () {
+    //     changeVisibility();
+    //     toast('_VisibilityHWL=$_VisibilityHWL');
+    //   },
+    //   // onPressed: executeEsptouch, // too complicated to use, because we don't know how to verify/handle response.
+    // ),
+        Container(
+          height: displayHeight(context) * 0.4, // MediaQuery.of(context).size.height / 2,
+          width: displayWidth(context) * 0.6,
+          child: ListWheelScrollView(
+            controller: FixedExtentScrollController(initialItem: _InitScrollIndex),
+            itemExtent: displayWidth(context) * 0.35,
+            // itemExtent: 100,
+            children: buildTankTypesConfiguration(),
+            // children: items,
+            // value between 0 --> 0.01
+            perspective: 0.009,
+            diameterRatio: 1.5,
+            // default 2.0
+            // useMagnifier: true,
+            magnification: 1.1,
+            physics: FixedExtentScrollPhysics(),
+
+            onSelectedItemChanged: (index) {
+              print('index====$index');
+              setState(() {
+                _SelectedTankType =
+                    Constants.gTankTypesMap!.keys.elementAt(index);
+                switch (_SelectedTankType) {
+                  case Constants.TANK_TYPE_RECTANGLE:
+                  case Constants.TANK_TYPE_HORIZONTAL_OVAL:
+                  case Constants.TANK_TYPE_VERTICAL_OVAL:
+                  case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
+                    {
+                      _VisibilityHWL = true;
+                      _VisibilityLD = false;
+                      break;
+                    }
+                  case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+                  case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
+                  case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
+                  case Constants.TANK_TYPE_VERTICAL_CAPSULE:
+                  case Constants
+                      .TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
+                  case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
+                    {
+                      _VisibilityHWL = false;
+                      _VisibilityLD = true;
+                      break;
+                    }
+                }
+
+                // toast('index====$index | mTankType=$mSelectedTankType | mVisibilityHWL=$mVisibilityHWL');
+              });
+            },
+          ),
+        ),
+        Container(child: buildTankTypeDimensionForm(_SelectedTankType)),
+        // Visibility(
+        //     visible: _VisibilityHWL,
+        //     child: Container(
+        //       child: buildTankTypeDimensionForm(_SelectedTankType),
+        //       // child: Text('HWL Section', style: TextStyle(color: Colors.black87)),
+        //     )
+        // ),
+        // Visibility(
+        //     visible: _VisibilityLD,
+        //     child: Container(
+        //       // child: Text('LD Section', style: TextStyle(color: Colors.black87)),
+        //       child: buildTankTypeDimensionForm(_SelectedTankType),
+        //     )
+        // ),
       ],
     );
   }

@@ -23,7 +23,13 @@ class Device extends Item{
   double notifyTempHigher;
   String notifyEmail;
 
-  final String deviceType;
+  final String wTankType;
+  final double wFilledDepth;
+  final double wHeight;
+  final double wWidth;
+  final double wDiameter;
+  final double wSideLength;
+  final double wLength;
 
   // List<Header> headers;
   // List<ItemData> itemDatas;
@@ -48,10 +54,18 @@ class Device extends Item{
     double notifyTempLower = 0,
     double notifyTempHigher = 0,
     String notifyEmail = '',
-    String deviceType = '',
+    String wTankType = '',
+    double wFilledDepth = double.nan,
+    double wHeight = double.nan,
+    double wWidth = double.nan,
+    double wDiameter = double.nan,
+    double wSideLength = double.nan,
+    double wLength = double.nan,
+
     // List<Header> headers,
     // List<ItemData> itemDatas,
     // Topic topic,
+
   })
     : this.index = index,
       this.name = name ?? '',
@@ -65,13 +79,19 @@ class Device extends Item{
       this.uid = uid ?? '',
       this.updatedWhen = updatedWhen ?? '',
 
-
       this.notifyHumidLower = notifyHumidLower ?? 0,
       this.notifyHumidHigher = notifyHumidHigher ?? 0,
       this.notifyTempLower = notifyTempLower ?? 0,
       this.notifyTempHigher = notifyTempHigher ?? 0,
       this.notifyEmail = notifyEmail ?? '',
-      this.deviceType = deviceType ?? ''
+      this.wTankType = wTankType ?? '',
+
+      this.wFilledDepth = double.nan,
+      this.wHeight = double.nan,
+      this.wWidth = double.nan,
+      this.wDiameter = double.nan,
+      this.wSideLength = double.nan,
+      this.wLength = double.nan
       // this.headers = headers,
       // this.itemDatas = itemDatas,
       // this.topic = topic
@@ -97,7 +117,13 @@ class Device extends Item{
     double? notifyTempHigher,
 
     String? notifyEmail,
-    String? deviceType,
+    String? wTankType,
+    double? wFilledDepth,
+    double? wHeight,
+    double? wWidth,
+    double? wDiameter,
+    double? wSideLength,
+    double? wLength,
 
     // List<Header> headers,
     // List<ItemData> itemDatas,
@@ -122,7 +148,14 @@ class Device extends Item{
       notifyTempLower: notifyTempLower ?? this.notifyTempLower,
       notifyTempHigher: notifyTempHigher ?? this.notifyTempHigher,
       notifyEmail: notifyEmail ?? this.notifyEmail,
-      deviceType: deviceType ?? this.deviceType,
+      wTankType: wTankType ?? this.wTankType,
+
+      wFilledDepth: wFilledDepth ?? this.wFilledDepth,
+      wHeight: wHeight ?? this.wHeight,
+      wWidth: wWidth ?? this.wWidth,
+      wDiameter: wDiameter ?? this.wDiameter,
+      wSideLength: wSideLength ?? this.wSideLength,
+      wLength: wLength ?? this.wLength,
 
       // headers: headers ?? this.headers,
       // itemDatas: itemDatas ?? this.itemDatas,
@@ -149,7 +182,14 @@ class Device extends Item{
       notifyTempLower.hashCode ^
       notifyTempHigher.hashCode ^
       notifyEmail.hashCode ^
-      deviceType.hashCode;
+      wTankType.hashCode ^
+      wFilledDepth.hashCode ^
+      wHeight.hashCode ^
+      wWidth.hashCode ^
+      wDiameter.hashCode ^
+      wSideLength.hashCode ^
+      wLength.hashCode
+  ;
 
   @override
   bool operator ==(Object other) =>
@@ -174,7 +214,14 @@ class Device extends Item{
           notifyTempHigher == other.notifyTempHigher &&
 
           notifyEmail == other.notifyEmail &&
-          deviceType == other.deviceType &&
+          wTankType == other.wTankType &&
+
+          wFilledDepth == other.wFilledDepth &&
+          wHeight == other.wHeight &&
+          wWidth == other.wWidth &&
+          wDiameter == other.wDiameter &&
+          wSideLength == other.wSideLength &&
+          wLength == other.wLength &&
 
           name == other.name; // &&
         // headers == other.headers &&
@@ -183,7 +230,15 @@ class Device extends Item{
 
   @override
   String toString() {
-    return 'Device { id: $id, uid: $uid, index: $index, name: $name, mode: $mode, localip: $localip, readingInterval: $readingInterval, humidity: $humidity, temperature: $temperature, readVoltage: $readVoltage, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail, deviceType: $deviceType}'; //, headers: $headers, itemDatas: ${itemDatas}, topic: ${topic} }';
+    return 'Device { id: $id, uid: $uid, index: $index, name: $name, mode: $mode, localip: $localip, readingInterval: $readingInterval, humidity: $humidity, temperature: $temperature, readVoltage: $readVoltage, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail, '
+        'wTankType: $wTankType,'
+        'wFilledDepth: $wFilledDepth,'
+        'wHeight: $wHeight,'
+        'wWidth: $wWidth,'
+        'wDiameter: $wDiameter,'
+        'wSideLength: $wSideLength,'
+        'wLength: $wLength,'
+        '}'; //, headers: $headers, itemDatas: ${itemDatas}, topic: ${topic} }';
   }
 
   ItemEntity toEntity() {
