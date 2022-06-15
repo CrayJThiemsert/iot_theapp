@@ -45,6 +45,40 @@ class Constants extends InheritedWidget {
   static const TANK_TYPE_HORIZONTAL_DISH_ENDS = 'Horizontal Dish Ends';
   static const TANK_TYPE_HORIZONTAL_ELLIPSE = 'Horizontal Ellipse';
 
+  // Dimension Types
+  static const DIMENSION_TYPE_LENGTH = 'Length (l)';
+  static const DIMENSION_TYPE_DIAMETER = 'Diameter (d)';
+  static const DIMENSION_TYPE_HEIGHT = 'Height (h)';
+  static const DIMENSION_TYPE_WIDTH = 'Width (w)';
+  static const DIMENSION_TYPE_SIDE_LENGTH = 'Side Length (a)';
+
+  // Tank Types
+  static const Map<String, Map<String, String>> gTankTypesMap = {
+    TANK_TYPE_HORIZONTAL_CYLINDER: {DIMENSION_TYPE_LENGTH: 'l', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_VERTICAL_CYLINDER: {DIMENSION_TYPE_LENGTH: 'l', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_RECTANGLE: {DIMENSION_TYPE_HEIGHT: 'h', DIMENSION_TYPE_WIDTH: 'w', DIMENSION_TYPE_LENGTH: 'l'},
+    TANK_TYPE_HORIZONTAL_OVAL: {DIMENSION_TYPE_HEIGHT: 'h', DIMENSION_TYPE_WIDTH: 'w', DIMENSION_TYPE_LENGTH: 'l'},
+    TANK_TYPE_VERTICAL_OVAL: {DIMENSION_TYPE_HEIGHT: 'h', DIMENSION_TYPE_WIDTH: 'w', DIMENSION_TYPE_LENGTH: 'l'},
+    TANK_TYPE_HORIZONTAL_CAPSULE: {DIMENSION_TYPE_SIDE_LENGTH: 'a', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_VERTICAL_CAPSULE: {DIMENSION_TYPE_SIDE_LENGTH: 'a', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL: {DIMENSION_TYPE_SIDE_LENGTH: 'a', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_HORIZONTAL_DISH_ENDS: {DIMENSION_TYPE_SIDE_LENGTH: 'a', DIMENSION_TYPE_DIAMETER: 'd'},
+    TANK_TYPE_HORIZONTAL_ELLIPSE: {DIMENSION_TYPE_HEIGHT: 'h', DIMENSION_TYPE_WIDTH: 'w', DIMENSION_TYPE_LENGTH: 'l'},
+  };
+
+  static const Map<String, String> gTankImagesMap = {
+    TANK_TYPE_HORIZONTAL_CYLINDER: 'images/tanks/base_horizontal_cylinder.jpg',
+    TANK_TYPE_VERTICAL_CYLINDER: 'images/tanks/base_vertical_cylinder.jpg',
+    TANK_TYPE_RECTANGLE: 'images/tanks/base_rectangle.jpg',
+    TANK_TYPE_HORIZONTAL_OVAL: 'images/tanks/base_horizontal_oval.jpg',
+    TANK_TYPE_VERTICAL_OVAL: 'images/tanks/base_vertical_oval.jpg',
+    TANK_TYPE_HORIZONTAL_CAPSULE: 'images/tanks/base_horizontal_capsule.jpg',
+    TANK_TYPE_VERTICAL_CAPSULE: 'images/tanks/base_vertical_capsule.jpg',
+    TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL: 'images/tanks/base_horizontal_2_1_elliptical.jpg',
+    TANK_TYPE_HORIZONTAL_DISH_ENDS: 'images/tanks/base_horizontal_dish_ends.jpg',
+    TANK_TYPE_HORIZONTAL_ELLIPSE: 'images/tanks/base_horizontal_ellipse.jpg',
+  };
+
   /**
    * Length unit types
    */
@@ -59,33 +93,6 @@ class Constants extends InheritedWidget {
   static const VOLUME_TYPE_LITERS = 'Liters';
   static const VOLUME_TYPE_CUBIC_METERS = 'Cubic Meters';
   static const VOLUME_TYPE_CUBIC_FEET = 'Cubic Feet';
-
-  // Tank Types
-  static const Map<String, Map<String, String>> gTankTypesMap = {
-    "Horizontal Cylinder": {'Length (l)': 'l', 'Diameter (d)': 'd'},
-    "Vertical Cylinder": {'Length (l)': 'l', 'Diameter (d)': 'd'},
-    "Rectangle": {'Height (h)': 'h', 'Width (w)': 'w', 'Length (l)': 'l'},
-    "Horizontal Oval": {'Height (h)': 'h', 'Width (w)': 'w', 'Length (l)': 'l'},
-    "Vertical Oval": {'Height (h)': 'h', 'Width (w)': 'w', 'Length (l)': 'l'},
-    "Horizontal Capsule": {'Side Length (a)': 'a', 'Diameter (d)': 'd'},
-    "Vertical Capsule": {'Side Length (a)': 'a', 'Diameter (d)': 'd'},
-    "Horizontal 2:1 Elliptical": {'Side Length (a)': 'a', 'Diameter (d)': 'd'},
-    "Horizontal Dish Ends": {'Side Length (a)': 'a', 'Diameter (d)': 'd'},
-    "Horizontal Ellipse": {'Height (h)': 'h', 'Width (w)': 'w', 'Length (l)': 'l'},
-  };
-
-  static const Map<String, String> gTankImagesMap = {
-    "Horizontal Cylinder": 'images/tanks/base_horizontal_cylinder.jpg',
-    "Vertical Cylinder": 'images/tanks/base_vertical_cylinder.jpg',
-    "Rectangle": 'images/tanks/base_rectangle.jpg',
-    "Horizontal Oval": 'images/tanks/base_horizontal_oval.jpg',
-    "Vertical Oval": 'images/tanks/base_vertical_oval.jpg',
-    "Horizontal Capsule": 'images/tanks/base_horizontal_capsule.jpg',
-    "Vertical Capsule": 'images/tanks/base_vertical_capsule.jpg',
-    "Horizontal 2:1 Elliptical": 'images/tanks/base_horizontal_2_1_elliptical.jpg',
-    "Horizontal Dish Ends": 'images/tanks/base_horizontal_dish_ends.jpg',
-    "Horizontal Ellipse": 'images/tanks/base_horizontal_ellipse.jpg',
-  };
 
   // static const xx = TextStyle(
   //   color: Colors.white,

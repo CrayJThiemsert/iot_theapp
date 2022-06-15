@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:iot_theapp/pages/device/database/device_database.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/model/notification.dart' as Notify;
+import 'package:iot_theapp/pages/device/model/tank.dart';
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
 import 'package:iot_theapp/pages/device/view/line_chart_live.dart';
 import 'package:iot_theapp/pages/device/view/utils.dart';
@@ -46,6 +47,8 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   Device device = Device();
   Notify.Notification notification = Notify.Notification();
   Notify.Notification notificationDialog = Notify.Notification();
+  Tank tank = Tank();
+  Tank tankDialog = Tank();
   User user = const User(uid: 'cray');
   // late DeviceDatabase deviceDatabase;
 
@@ -468,6 +471,11 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         .ref()
         .child('users/${user.uid}/devices/${device.uid}/notification')
         .orderByKey();
+
+    var deviceTankRef = FirebaseDatabase.instance
+        .ref()
+        .child('users/${user.uid}/devices/${device.uid}/tank')
+        .orderByKey();
     // var deviceRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history/2021-03-31 01:32:01');
     final TextStyle? unitStyle = Theme.of(context).textTheme.headline2;
     final TextStyle? headlineStyle = Theme.of(context).textTheme.headline1;
@@ -506,252 +514,310 @@ class _ShowDevicePageState extends State<ShowDevicePage>
             xValue += step;
 
             return StreamBuilder(
-                stream: deviceNotificationRef.onValue,
-                builder:
-                    (context, AsyncSnapshot<DatabaseEvent> snapNotification) {
-                  if (snapNotification.hasData && !snapNotification.hasError) {
-                    print(
-                        'snapNotification.hasData=${snapNotification.hasData}');
-                    print(
-                        '=>${snapNotification.data!.snapshot.value.toString()}');
-                    if (snapNotification.data!.snapshot.value != null) {
-                      print(
-                          'snapNotification.data!.snapshot.value is not null!!');
-                      var notificationStream = Notify.Notification.fromJson(
-                          snapNotification.data!.snapshot.value as Map);
-
-                      // Stream Notification Data from cloud
-                      this.notification.notifyEmail =
-                          notificationStream.notifyEmail;
-                      this.notification.notifyTempHigher =
-                          notificationStream.notifyTempHigher;
-                      this.notification.notifyTempLower =
-                          notificationStream.notifyTempLower;
-                      this.notification.notifyHumidHigher =
-                          notificationStream.notifyHumidHigher;
-                      this.notification.notifyHumidLower =
-                          notificationStream.notifyHumidLower;
-                      this.notification.isSendNotify =
-                          notificationStream.isSendNotify;
+                stream: deviceTankRef.onValue,
+                builder: (context, AsyncSnapshot<DatabaseEvent> snapTank) {
+                  if (snapTank.hasData && !snapTank.hasError) {
+                    print('snapTank.hasData=${snapTank.hasData}');
+                    print('=>${snapTank.data!.snapshot.value.toString()}');
+                    if (snapTank.data!.snapshot.value != null) {
+                      print('snapTank.data!.snapshot.value is not null!!');
+                      var tankStream = Tank.fromJson(
+                          snapTank.data!.snapshot.value as Map);
+                      // Stream Tank Data from cloud
+                      this.tank.wTankType = tankStream.wTankType;
+                      this.tank.wFilledDepth = tankStream.wFilledDepth;
+                      this.tank.wHeight = tankStream.wHeight;
+                      this.tank.wWidth = tankStream.wWidth;
+                      this.tank.wDiameter = tankStream.wDiameter;
+                      this.tank.wSideLength = tankStream.wSideLength;
+                      this.tank.wLength = tankStream.wLength;
                     } else {
-                      print('snapNotification.data!.snapshot.value is null!!');
+                      print('snapTank.data!.snapshot.value is null!!');
                     }
-
-                    print(
-                        'this.notification.isSendNotify=${this.notification.isSendNotify}');
-                    print(
-                        'this.notification.notifyEmail=${this.notification.notifyEmail}');
-                    print(
-                        'this.notification.notifyTempHigher=${this.notification.notifyTempHigher}');
-                    print(
-                        'this.notification.notifyTempLower=${this.notification.notifyTempLower}');
-                    print(
-                        'this.notification.notifyHumidHigher=${this.notification.notifyHumidHigher}');
-                    print(
-                        'this.notification.notifyHumidLower=${this.notification.notifyHumidLower}');
+                    print('this.tank.wTankType=${this.tank.wTankType}');
+                    print('this.tank.wFilledDepth=${this.tank.wFilledDepth}');
+                    print('this.tank.wHeight=${this.tank.wHeight}');
+                    print('this.tank.wWidth=${this.tank.wWidth}');
+                    print('this.tank.wDiameter=${this.tank.wDiameter}');
+                    print('this.tank.wSideLength=${this.tank.wSideLength}');
+                    print('this.tank.wLength=${this.tank.wLength}');
                   }
-                  return Scaffold(
-                    appBar: AppBar(
-                      title: Text('${device.name ?? device.uid} Detail'),
-                    ),
-                    body: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 12,
-                          ),
-                          // TempAndHumidCircularWidget(weatherHistory: weatherHistory, headlineStyle: headlineStyle, unitStyle: unitStyle),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          GestureDetector(
-                            onTap: () async {
-                              final deviceReturn =
-                                  await openTankConfigurationDialog();
-                              if (deviceReturn == null) return;
 
-                              setState(() {
-                                this.notification.notifyTempLower =
-                                    deviceReturn.notifyTempLower;
-                                this.notification.notifyTempHigher =
-                                    deviceReturn.notifyTempHigher;
-                                this.notification.notifyHumidLower =
-                                    deviceReturn.notifyHumidLower;
-                                this.notification.notifyHumidHigher =
-                                    deviceReturn.notifyHumidHigher;
-                                this.notification.notifyEmail =
-                                    deviceReturn.notifyEmail;
-                                // this.notification.isSendNotify = deviceReturn.isSendNotify;
-                              });
-                            },
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              // mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Container(child: Text('62.5% Full')),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: displayWidth(context) * 0.3,
-                                      child: Image(
-                                        image: AssetImage(
-                                            'images/tanks/base_vertical_cylinder.jpg'),
-                                      ),
-                                    ),
-                                    Container(
-                                        child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                                child: Text('Tank Volumes:')),
-                                            Container(
-                                                child: Text('6,283.19 Liters')),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Container(
-                                                child:
-                                                    Text('Filled Depth(f):')),
-                                            Container(child: Text('120cm')),
-                                          ],
-                                        ),
-                                        buildTankTypeDimensionColumn(
-                                            device.wTankType),
-                                      ],
-                                    )),
-                                  ],
-                                ),
-                              ],
+                    return StreamBuilder(
+                        stream: deviceNotificationRef.onValue,
+                        builder:
+                            (context,
+                            AsyncSnapshot<DatabaseEvent> snapNotification) {
+                          if (snapNotification.hasData &&
+                              !snapNotification.hasError) {
+                            print(
+                                'snapNotification.hasData=${snapNotification
+                                    .hasData}');
+                            print(
+                                '=>${snapNotification.data!.snapshot.value
+                                    .toString()}');
+                            if (snapNotification.data!.snapshot.value != null) {
+                              print(
+                                  'snapNotification.data!.snapshot.value is not null!!');
+                              var notificationStream = Notify.Notification
+                                  .fromJson(
+                                  snapNotification.data!.snapshot.value as Map);
+
+                              // Stream Notification Data from cloud
+                              this.notification.notifyEmail =
+                                  notificationStream.notifyEmail;
+                              this.notification.notifyTempHigher =
+                                  notificationStream.notifyTempHigher;
+                              this.notification.notifyTempLower =
+                                  notificationStream.notifyTempLower;
+                              this.notification.notifyHumidHigher =
+                                  notificationStream.notifyHumidHigher;
+                              this.notification.notifyHumidLower =
+                                  notificationStream.notifyHumidLower;
+                              this.notification.isSendNotify =
+                                  notificationStream.isSendNotify;
+                            } else {
+                              print(
+                                  'snapNotification.data!.snapshot.value is null!!');
+                            }
+
+                            print(
+                                'this.notification.isSendNotify=${this
+                                    .notification.isSendNotify}');
+                            print(
+                                'this.notification.notifyEmail=${this
+                                    .notification.notifyEmail}');
+                            print(
+                                'this.notification.notifyTempHigher=${this
+                                    .notification.notifyTempHigher}');
+                            print(
+                                'this.notification.notifyTempLower=${this
+                                    .notification.notifyTempLower}');
+                            print(
+                                'this.notification.notifyHumidHigher=${this
+                                    .notification.notifyHumidHigher}');
+                            print(
+                                'this.notification.notifyHumidLower=${this
+                                    .notification.notifyHumidLower}');
+                          }
+                          return Scaffold(
+                            appBar: AppBar(
+                              title: Text(
+                                  '${device.name ?? device.uid} Detail'),
                             ),
-                          ),
-                          drawLineChart(),
-                          buildDeviceDescription(weatherHistory),
-                          buildReadingIntervalCard(context),
-                          SizedBox(
-                            height: 8,
-                          ),
-                          // draw line chart
-
-                          // Notification setting
-                          Column(
-                            children: [
-                              SizedBox(
-                                height: 8,
-                              ),
-                              TextButton(
-                                child: Text('Notification'),
-                                style: TextButton.styleFrom(
-                                  primary: Colors.black54,
-                                  backgroundColor: Colors.white70,
-                                  onSurface: Colors.grey,
-                                  textStyle: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 16,
-                                    fontStyle: FontStyle.normal,
-                                    fontWeight: FontWeight.w600,
+                            body: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: 12,
                                   ),
-                                  shadowColor: Colors.limeAccent,
-                                  elevation: 5,
-                                ),
+                                  // TempAndHumidCircularWidget(weatherHistory: weatherHistory, headlineStyle: headlineStyle, unitStyle: unitStyle),
+                                  SizedBox(
+                                    height: 12,
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final deviceReturn =
+                                      await openTankConfigurationDialog();
+                                      if (deviceReturn == null) return;
 
-                                // style: ButtonStyle(
-                                //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                                //           (Set<MaterialState> states) {
-                                //         if (states.contains(MaterialState.disabled))
-                                //           return Colors.black54;
-                                //         return null; // Defer to the widget's default.
-                                //       }),
-                                //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                                //           (Set<MaterialState> states) {
-                                //         if (states.contains(MaterialState.focused))
-                                //           return Colors.red;
-                                //         if (states.contains(MaterialState.hovered))
-                                //           return Colors.green;
-                                //         if (states.contains(MaterialState.pressed))
-                                //           return Colors.black54;
-                                //         return null; // Defer to the widget's default.
-                                //       }),
-                                // ),
-                                onPressed: () async {
-                                  // final name = await openNotificationInputDialog();
-                                  // if(name == null || name.isEmpty) return;
-                                  //
-                                  // setState(() {
-                                  //   this.name = name;
-                                  // });
+                                      setState(() {
+                                        this.notification.notifyTempLower =
+                                            deviceReturn.notifyTempLower;
+                                        this.notification.notifyTempHigher =
+                                            deviceReturn.notifyTempHigher;
+                                        this.notification.notifyHumidLower =
+                                            deviceReturn.notifyHumidLower;
+                                        this.notification.notifyHumidHigher =
+                                            deviceReturn.notifyHumidHigher;
+                                        this.notification.notifyEmail =
+                                            deviceReturn.notifyEmail;
+                                        // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                      });
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center,
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .center,
+                                      // mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Container(child: Text('62.5% Full')),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .center,
+                                          children: [
+                                            Container(
+                                              width: displayWidth(context) *
+                                                  0.3,
+                                              child: Image(
+                                                image: AssetImage(
+                                                    'images/tanks/base_vertical_cylinder.jpg'),
+                                              ),
+                                            ),
+                                            Container(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize
+                                                      .min,
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment.spaceAround,
+                                                  crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize
+                                                          .min,
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceAround,
+                                                      crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                      children: [
+                                                        Container(
+                                                            child: Text(
+                                                                'Tank Volumes:')),
+                                                        Container(
+                                                            child: Text(
+                                                                '6,283.19 Liters')),
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize
+                                                          .min,
+                                                      mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceAround,
+                                                      crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                      children: [
+                                                        Container(
+                                                            child:
+                                                            Text(
+                                                                'Filled Depth(f):')),
+                                                        Container(child: Text(
+                                                            '120cm')),
+                                                      ],
+                                                    ),
+                                                    buildTankTypeDimensionColumn(
+                                                        device.wTankType),
+                                                  ],
+                                                )),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  drawLineChart(),
+                                  buildDeviceDescription(weatherHistory),
+                                  buildReadingIntervalCard(context),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  // draw line chart
 
-                                  // // Prepare notification values before edit them on dialog.
-                                  // this.notificationDialog = this.notification;
+                                  // Notification setting
+                                  Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 8,
+                                      ),
+                                      TextButton(
+                                        child: Text('Notification'),
+                                        style: TextButton.styleFrom(
+                                          primary: Colors.black54,
+                                          backgroundColor: Colors.white70,
+                                          onSurface: Colors.grey,
+                                          textStyle: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 16,
+                                            fontStyle: FontStyle.normal,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          shadowColor: Colors.limeAccent,
+                                          elevation: 5,
+                                        ),
 
-                                  final deviceReturn =
-                                      await openNotificationInputDialog();
-                                  if (deviceReturn == null) return;
+                                        // style: ButtonStyle(
+                                        //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                                        //           (Set<MaterialState> states) {
+                                        //         if (states.contains(MaterialState.disabled))
+                                        //           return Colors.black54;
+                                        //         return null; // Defer to the widget's default.
+                                        //       }),
+                                        //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                                        //           (Set<MaterialState> states) {
+                                        //         if (states.contains(MaterialState.focused))
+                                        //           return Colors.red;
+                                        //         if (states.contains(MaterialState.hovered))
+                                        //           return Colors.green;
+                                        //         if (states.contains(MaterialState.pressed))
+                                        //           return Colors.black54;
+                                        //         return null; // Defer to the widget's default.
+                                        //       }),
+                                        // ),
+                                        onPressed: () async {
+                                          // final name = await openNotificationInputDialog();
+                                          // if(name == null || name.isEmpty) return;
+                                          //
+                                          // setState(() {
+                                          //   this.name = name;
+                                          // });
 
-                                  setState(() {
-                                    this.notification.notifyTempLower =
-                                        deviceReturn.notifyTempLower;
-                                    this.notification.notifyTempHigher =
-                                        deviceReturn.notifyTempHigher;
-                                    this.notification.notifyHumidLower =
-                                        deviceReturn.notifyHumidLower;
-                                    this.notification.notifyHumidHigher =
-                                        deviceReturn.notifyHumidHigher;
-                                    this.notification.notifyEmail =
-                                        deviceReturn.notifyEmail;
-                                    // this.notification.isSendNotify = deviceReturn.isSendNotify;
-                                  });
-                                },
+                                          // // Prepare notification values before edit them on dialog.
+                                          // this.notificationDialog = this.notification;
+
+                                          final deviceReturn =
+                                          await openNotificationInputDialog();
+                                          if (deviceReturn == null) return;
+
+                                          setState(() {
+                                            this.notification.notifyTempLower =
+                                                deviceReturn.notifyTempLower;
+                                            this.notification.notifyTempHigher =
+                                                deviceReturn.notifyTempHigher;
+                                            this.notification.notifyHumidLower =
+                                                deviceReturn.notifyHumidLower;
+                                            this.notification
+                                                .notifyHumidHigher =
+                                                deviceReturn.notifyHumidHigher;
+                                            this.notification.notifyEmail =
+                                                deviceReturn.notifyEmail;
+                                            // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                          });
+                                        },
+                                      ),
+                                      SizedBox(
+                                        height: 8,
+                                      ),
+                                      // Notification display
+                                      drawNotificationDetail(),
+                                    ],
+                                  ),
+
+                                  SizedBox(
+                                    height: 16,
+                                  ),
+                                  // Row(
+                                  //   children: [
+                                  //     Expanded(
+                                  //         child: Text(
+                                  //           'Name: ',
+                                  //           style: TextStyle(fontWeight: FontWeight.w600),
+                                  //         ),
+                                  //     ),
+                                  //     const SizedBox(width: 12,),
+                                  //     Text(device.notifyEmail),
+                                  //   ],
+                                  // )
+                                ],
                               ),
-                              SizedBox(
-                                height: 8,
-                              ),
-                              // Notification display
-                              drawNotificationDetail(),
-                            ],
-                          ),
-
-                          SizedBox(
-                            height: 16,
-                          ),
-                          // Row(
-                          //   children: [
-                          //     Expanded(
-                          //         child: Text(
-                          //           'Name: ',
-                          //           style: TextStyle(fontWeight: FontWeight.w600),
-                          //         ),
-                          //     ),
-                          //     const SizedBox(width: 12,),
-                          //     Text(device.notifyEmail),
-                          //   ],
-                          // )
-                        ],
-                      ),
-                    ),
-                  );
-                });
+                            ),
+                          );
+                        });
+                  });
           } else {
             return Scaffold(
                 appBar: AppBar(
@@ -1439,6 +1505,59 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   }
 
   /**
+   * "the Node" to save tank dimension values
+   */
+  Future<void> updateTankDimensionSettings() async {
+    // update tank dimension settings in cloud database
+    print(
+        'update tank dimension settings in cloud database - users/${user.uid}/devices/${device.uid}/tank');
+    var deviceRef = FirebaseDatabase.instance
+        .ref()
+        .child('users/${user.uid}/devices/${device.uid}/tank')
+        .update({
+      // 'name':  device.name,
+      'wTankType': (this.device.wTankType == '')
+          ? this.notification.notifyHumidLower
+          : this.notificationDialog.notifyHumidLower,
+      'wHeight': (this.notificationDialog.notifyHumidHigher == 0)
+          ? this.notification.notifyHumidHigher
+          : this.notificationDialog.notifyHumidHigher,
+      'notifyTempLower': (this.notificationDialog.notifyTempLower == 0)
+          ? this.notification.notifyTempLower
+          : this.notificationDialog.notifyTempLower,
+      'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0)
+          ? this.notification.notifyTempHigher
+          : this.notificationDialog.notifyTempHigher,
+      'notifyEmail': this.notificationDialog.notifyEmail,
+      'isSendNotify': this.notification.isSendNotify,
+    })
+        .onError((error, stackTrace) =>
+        print('updateNotificationSettings error=${error.toString()}'))
+        .whenComplete(() {
+      print('updated notification settings success.');
+      showDialog(
+          context: context,
+          builder: (_) => CupertinoAlertDialog(
+            title: Text("Update Successfully"),
+            content:
+            Text("Update notification settings is successfully."),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          barrierDismissible: false);
+    });
+
+    return;
+  }
+
+  /**
    * "the Node" to save notification values
    */
   Future<void> updateNotificationSettings() async {
@@ -1784,116 +1903,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                 child: Column(
                   children: [
                     TankDimensionConfig(device: this.device, selectedTankType: mSelectedTankType,),
-                    // Expanded(
-                    //   child: ListWheelScrollView(
-                    //     itemExtent: displayWidth(context) * 0.3,
-                    //     children: buildTankTypesConfiguration(),
-                    //     // children: items,
-                    //     // value between 0 --> 0.01
-                    //     perspective: 0.009,
-                    //     diameterRatio: 1.5,
-                    //     // default 2.0
-                    //     // useMagnifier: true,
-                    //     magnification: 1.1,
-                    //     physics: FixedExtentScrollPhysics(),
-                    //     onSelectedItemChanged: (index) {
-                    //       print('index====$index');
-                    //       setState(() {
-                    //         mSelectedTankType =
-                    //             Constants.gTankTypesMap!.keys.elementAt(index);
-                    //         switch (mSelectedTankType) {
-                    //           case Constants.TANK_TYPE_RECTANGLE:
-                    //           case Constants.TANK_TYPE_HORIZONTAL_OVAL:
-                    //           case Constants.TANK_TYPE_VERTICAL_OVAL:
-                    //           case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
-                    //             {
-                    //               mVisibilityHWL = true;
-                    //               mVisibilityLD = false;
-                    //               break;
-                    //             }
-                    //           case Constants.TANK_TYPE_VERTICAL_CYLINDER:
-                    //           case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
-                    //           case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
-                    //           case Constants.TANK_TYPE_VERTICAL_CAPSULE:
-                    //           case Constants
-                    //               .TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
-                    //           case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
-                    //             {
-                    //               mVisibilityHWL = false;
-                    //               mVisibilityLD = true;
-                    //               break;
-                    //             }
-                    //         }
-                    //
-                    //         // toast('index====$index | mTankType=$mSelectedTankType | mVisibilityHWL=$mVisibilityHWL');
-                    //       });
-                    //     },
-                    //   ),
-                    // ),
-
-                    // mVisibilityHWL ?
-                    //   buildTankTypeDimensionForm(mSelectedTankType) : Container(),
-                    // Text('C mSelectedTankType=$mSelectedTankType'),
-                    // Visibility(
-                    //   visible: mVisibilityLD,
-                    //   // maintainState: true,
-                    //   child: Text('mSelectedTankType=$mSelectedTankType'),
-                    //   // child: Image(
-                    //   //   image: AssetImage(
-                    //   //       'images/tanks/base_vertical_cylinder.jpg'),
-                    //   // ),
-                    //   // child: buildTankTypeDimensionForm(mSelectedTankType)
-                    // ),
-
-                    // Card(
-                    //     color: Colors.black12,
-                    //     child: Column(
-                    //       mainAxisSize: MainAxisSize.min,
-                    //       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    //       crossAxisAlignment: CrossAxisAlignment.center,
-                    //       children: [
-                    //         Container(
-                    //           width: displayWidth(context) * 0.8,
-                    //           child: TextFormField(
-                    //             initialValue: this.notification.notifyEmail,
-                    //             keyboardType: TextInputType.number,
-                    //             // validator: (val) => !isEmail(val!) ? 'Invalid Email' : null,
-                    //             validator: (value) {
-                    //               if (value == null || value.isEmpty) {
-                    //                 return 'Please enter some text';
-                    //               } else {
-                    //                 if (!isEmail(value!)) {
-                    //                   return 'Invalid Email';
-                    //                 }
-                    //                 setState(() {
-                    //                   this.notificationDialog.notifyEmail = value;
-                    //                 });
-                    //
-                    //                 return null;
-                    //               }
-                    //             },
-                    //             // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
-                    //             autofocus: false,
-                    //             decoration: InputDecoration(
-                    //               label: Text(
-                    //                 'Email:',
-                    //                 style: TextStyle(fontSize: 16, color: Colors.black45),
-                    //               ),
-                    //               // labelText: Text('Email:'),
-                    //               hintText: 'Enter your email address',
-                    //             ),
-                    //             // controller: name_controller,
-                    //             // onChanged: (value) {
-                    //             //   setState(() {
-                    //             //     this.device.notifyEmail = value;
-                    //             //   });
-                    //             // },
-                    //             // onSubmitted: (_) => submitNotificationSettings(),
-                    //           ),
-                    //         ),
-                    //         Text('$name'),
-                    //       ],
-                    //     )),
                   ],
                 ),
               ),
@@ -2805,6 +2814,13 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
   bool _VisibilityLD = false;
   int _InitScrollIndex = 0;
 
+  final _heightFormKey = GlobalKey<FormState>();
+  final _widthFormKey = GlobalKey<FormState>();
+  final _lengthFormKey = GlobalKey<FormState>();
+  final _diameterFormKey = GlobalKey<FormState>();
+  final _sideLengthFormKey = GlobalKey<FormState>();
+
+
   @override
   void initState() {
     int index = 0;
@@ -2818,14 +2834,161 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
   }
 
 
+
+  Key getDimensionKey(String dimensionType) {
+    switch(dimensionType) {
+      case Constants.DIMENSION_TYPE_LENGTH: {
+        return _lengthFormKey;
+      }
+      case Constants.DIMENSION_TYPE_DIAMETER: {
+        return _diameterFormKey;
+      }
+      case Constants.DIMENSION_TYPE_HEIGHT: {
+        return _heightFormKey;
+      }
+      case Constants.DIMENSION_TYPE_WIDTH: {
+        return _widthFormKey;
+      }
+      case Constants.DIMENSION_TYPE_SIDE_LENGTH: {
+        return _sideLengthFormKey;
+      }
+      default: {
+        return _lengthFormKey;
+      }
+    }
+  }
+
+  String getDimensionValue(String dimensionType) {
+    String result = '';
+    switch(dimensionType) {
+      case Constants.DIMENSION_TYPE_LENGTH: {
+        result = !widget.device.wLength!.isNaN ? widget.device.wLength!.toString() : '';
+        break;
+      }
+      case Constants.DIMENSION_TYPE_DIAMETER: {
+        result = !widget.device.wDiameter!.isNaN ? widget.device.wDiameter!.toString() : '';
+        break;
+      }
+      case Constants.DIMENSION_TYPE_HEIGHT: {
+        result = !widget.device.wHeight!.isNaN ? widget.device.wHeight!.toString() : '';
+        break;
+      }
+      case Constants.DIMENSION_TYPE_WIDTH: {
+        result = !widget.device.wWidth!.isNaN ? widget.device.wWidth!.toString() : '';
+        break;
+      }
+      case Constants.DIMENSION_TYPE_SIDE_LENGTH: {
+        result = !widget.device.wSideLength!.isNaN ? widget.device.wSideLength!.toString() : '';
+        break;
+      }
+      default: {
+        result = '';
+      }
+    }
+    print('getDimensionValue[${dimensionType}] widget.device.wLength![${widget.device.wLength!}] result=${result} ');
+    return result;
+  }
+
+  void setDimensionValue(String dimensionType, String value) {
+    switch(dimensionType) {
+      case Constants.DIMENSION_TYPE_LENGTH: {
+        widget.device.wLength = double.parse(value);
+        print('>> widget.device.wLength=${widget.device.wLength}');
+        break;
+      }
+      case Constants.DIMENSION_TYPE_DIAMETER: {
+        widget.device.wDiameter = double.parse(value);
+        print('>> widget.device.wDiameter=${widget.device.wDiameter}');
+        break;
+      }
+      case Constants.DIMENSION_TYPE_HEIGHT: {
+        widget.device.wHeight = double.parse(value);
+        print('>> widget.device.wHeight=${widget.device.wHeight}');
+        break;
+      }
+      case Constants.DIMENSION_TYPE_WIDTH: {
+        widget.device.wWidth = double.parse(value);
+        print('>> widget.device.wWidth=${widget.device.wWidth}');
+        break;
+      }
+      case Constants.DIMENSION_TYPE_SIDE_LENGTH: {
+        widget.device.wSideLength = double.parse(value);
+        print('>> widget.device.wSideLength=${widget.device.wSideLength}');
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
   Widget buildTankTypeDimensionForm(String tankType) {
     List<Widget> list = <Widget>[];
     if (tankType == '') {
       tankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
     }
 
-    Constants.gTankTypesMap[tankType]!.forEach((name, symbol) {
-      list.add(Container(child: Text('$name: 200cm', style: TextStyle(color: Colors.black87),)));
+    Constants.gTankTypesMap[tankType]!.forEach((dimensionTypeName, symbol) {
+      list.add(Container(child: Row(
+
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.end,
+
+        children: [
+          Text('$dimensionTypeName: ', style: TextStyle(color: Colors.black87),),
+          // Text('_ ', style: TextStyle(color: Colors.black87),),
+          Container(
+            width: 30,
+            height: 40,
+            child: Form(
+              key: getDimensionKey(dimensionTypeName),
+              child: TextFormField(
+
+                style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal),
+                initialValue: getDimensionValue(dimensionTypeName),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a ${dimensionTypeName} tank dimension number.';
+                  } else {
+                    if (!isNumeric(value!)) {
+                      return 'Invalid ${dimensionTypeName} tank dimension number';
+                    }
+                    setState(() {
+                      setDimensionValue(dimensionTypeName, value);
+                      print('*** ${dimensionTypeName} value=${value}');
+                    });
+
+                    return null;
+                  }
+                },
+                // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
+                autofocus: false,
+                // decoration: InputDecoration(
+                //   label: Text(
+                //     'Email:',
+                //     style: TextStyle(fontSize: 16, color: Colors.black45),
+                //   ),
+                //   // labelText: Text('Email:'),
+                //   hintText: 'Enter your email address',
+                // ),
+                // controller: name_controller,
+                onChanged: (value) {
+                  setState(() {
+                    setState(() {
+                      setDimensionValue(dimensionTypeName, value);
+                      print('+++ ${dimensionTypeName} value=${value}');
+                    });
+                  });
+                },
+                // onSubmitted: (_) => submitNotificationSettings(),
+              ),
+            ),
+          ),
+          Text('cm', style: TextStyle(color: Colors.black87),),
+        ],
+      )));
     });
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -2877,21 +3040,12 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-    // Visibility(
-    //     visible: _VisibilityHWL,
-    //     child: Container(child: Text('A selectedTankType=${widget.selectedTankType}', style: TextStyle(color: Colors.black87)),))
-    //     ,
-    Container(child: Text('${_SelectedTankType}', style: TextStyle(color: Colors.black87, fontSize: 18)),),
-    // ElevatedButton(
-    //   child: Text('Swap'),
-    //   onPressed: () {
-    //     changeVisibility();
-    //     toast('_VisibilityHWL=$_VisibilityHWL');
-    //   },
-    //   // onPressed: executeEsptouch, // too complicated to use, because we don't know how to verify/handle response.
-    // ),
-        Container(
+        Container(child: Text('${_SelectedTankType}', style: TextStyle(color: Colors.black87, fontSize: 18)),),
+        SizedBox(
           height: displayHeight(context) * 0.4, // MediaQuery.of(context).size.height / 2,
           width: displayWidth(context) * 0.6,
           child: ListWheelScrollView(
@@ -2943,20 +3097,6 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
           ),
         ),
         Container(child: buildTankTypeDimensionForm(_SelectedTankType)),
-        // Visibility(
-        //     visible: _VisibilityHWL,
-        //     child: Container(
-        //       child: buildTankTypeDimensionForm(_SelectedTankType),
-        //       // child: Text('HWL Section', style: TextStyle(color: Colors.black87)),
-        //     )
-        // ),
-        // Visibility(
-        //     visible: _VisibilityLD,
-        //     child: Container(
-        //       // child: Text('LD Section', style: TextStyle(color: Colors.black87)),
-        //       child: buildTankTypeDimensionForm(_SelectedTankType),
-        //     )
-        // ),
       ],
     );
   }

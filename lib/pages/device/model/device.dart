@@ -24,12 +24,12 @@ class Device extends Item{
   String notifyEmail;
 
   final String wTankType;
-  final double wFilledDepth;
-  final double wHeight;
-  final double wWidth;
-  final double wDiameter;
-  final double wSideLength;
-  final double wLength;
+  double wFilledDepth;
+  double wHeight;
+  double wWidth;
+  double wDiameter;
+  double wSideLength;
+  double wLength;
 
   // List<Header> headers;
   // List<ItemData> itemDatas;
