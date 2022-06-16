@@ -49,6 +49,13 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   Notify.Notification notificationDialog = Notify.Notification();
   Tank tank = Tank();
   Tank tankDialog = Tank();
+
+  static final _heightFormKey = GlobalKey<FormState>();
+  static final _widthFormKey = GlobalKey<FormState>();
+  static final _lengthFormKey = GlobalKey<FormState>();
+  static final _diameterFormKey = GlobalKey<FormState>();
+  static final _sideLengthFormKey = GlobalKey<FormState>();
+
   User user = const User(uid: 'cray');
   // late DeviceDatabase deviceDatabase;
 
@@ -203,7 +210,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     '100',
   ];
 
-  String mSelectedTankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+  static String mSelectedTankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
   bool mVisibilityHWL = false;
   bool mVisibilityLD = false;
 
@@ -531,6 +538,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                       this.tank.wDiameter = tankStream.wDiameter;
                       this.tank.wSideLength = tankStream.wSideLength;
                       this.tank.wLength = tankStream.wLength;
+                      this.tankDialog = this.tank;
                     } else {
                       print('snapTank.data!.snapshot.value is null!!');
                     }
@@ -541,6 +549,14 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                     print('this.tank.wDiameter=${this.tank.wDiameter}');
                     print('this.tank.wSideLength=${this.tank.wSideLength}');
                     print('this.tank.wLength=${this.tank.wLength}');
+
+                    print('this.tankDialog.wTankType=${this.tankDialog.wTankType}');
+                    print('this.tankDialog.wFilledDepth=${this.tankDialog.wFilledDepth}');
+                    print('this.tankDialog.wHeight=${this.tankDialog.wHeight}');
+                    print('this.tankDialog.wWidth=${this.tankDialog.wWidth}');
+                    print('this.tankDialog.wDiameter=${this.tankDialog.wDiameter}');
+                    print('this.tankDialog.wSideLength=${this.tankDialog.wSideLength}');
+                    print('this.tankDialog.wLength=${this.tankDialog.wLength}');
                   }
 
                     return StreamBuilder(
@@ -759,15 +775,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                                         //       }),
                                         // ),
                                         onPressed: () async {
-                                          // final name = await openNotificationInputDialog();
-                                          // if(name == null || name.isEmpty) return;
-                                          //
-                                          // setState(() {
-                                          //   this.name = name;
-                                          // });
-
-                                          // // Prepare notification values before edit them on dialog.
-                                          // this.notificationDialog = this.notification;
 
                                           final deviceReturn =
                                           await openNotificationInputDialog();
@@ -1511,48 +1518,51 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     // update tank dimension settings in cloud database
     print(
         'update tank dimension settings in cloud database - users/${user.uid}/devices/${device.uid}/tank');
-    var deviceRef = FirebaseDatabase.instance
-        .ref()
-        .child('users/${user.uid}/devices/${device.uid}/tank')
-        .update({
-      // 'name':  device.name,
-      'wTankType': (this.device.wTankType == '')
-          ? this.notification.notifyHumidLower
-          : this.notificationDialog.notifyHumidLower,
-      'wHeight': (this.notificationDialog.notifyHumidHigher == 0)
-          ? this.notification.notifyHumidHigher
-          : this.notificationDialog.notifyHumidHigher,
-      'notifyTempLower': (this.notificationDialog.notifyTempLower == 0)
-          ? this.notification.notifyTempLower
-          : this.notificationDialog.notifyTempLower,
-      'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0)
-          ? this.notification.notifyTempHigher
-          : this.notificationDialog.notifyTempHigher,
-      'notifyEmail': this.notificationDialog.notifyEmail,
-      'isSendNotify': this.notification.isSendNotify,
-    })
-        .onError((error, stackTrace) =>
-        print('updateNotificationSettings error=${error.toString()}'))
-        .whenComplete(() {
-      print('updated notification settings success.');
-      showDialog(
-          context: context,
-          builder: (_) => CupertinoAlertDialog(
-            title: Text("Update Successfully"),
-            content:
-            Text("Update notification settings is successfully."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("OK"),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-          barrierDismissible: false);
-    });
+
+    print('>>>>this.tank.wLength=${this.tank.wLength}');
+    print('>>>>this.tankDialog.wLength=${this.tankDialog.wLength}');
+    // var deviceRef = FirebaseDatabase.instance
+    //     .ref()
+    //     .child('users/${user.uid}/devices/${device.uid}/tank')
+    //     .update({
+    //   // 'name':  device.name,
+    //   'wTankType': (this.device.wTankType == '')
+    //       ? this.notification.notifyHumidLower
+    //       : this.notificationDialog.notifyHumidLower,
+    //   'wHeight': (this.notificationDialog.notifyHumidHigher == 0)
+    //       ? this.notification.notifyHumidHigher
+    //       : this.notificationDialog.notifyHumidHigher,
+    //   'notifyTempLower': (this.notificationDialog.notifyTempLower == 0)
+    //       ? this.notification.notifyTempLower
+    //       : this.notificationDialog.notifyTempLower,
+    //   'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0)
+    //       ? this.notification.notifyTempHigher
+    //       : this.notificationDialog.notifyTempHigher,
+    //   'notifyEmail': this.notificationDialog.notifyEmail,
+    //   'isSendNotify': this.notification.isSendNotify,
+    // })
+    //     .onError((error, stackTrace) =>
+    //     print('updateNotificationSettings error=${error.toString()}'))
+    //     .whenComplete(() {
+    //   print('updated notification settings success.');
+    //   showDialog(
+    //       context: context,
+    //       builder: (_) => CupertinoAlertDialog(
+    //         title: Text("Update Successfully"),
+    //         content:
+    //         Text("Update notification settings is successfully."),
+    //         actions: [
+    //           CupertinoDialogAction(
+    //             child: Text("OK"),
+    //             onPressed: () {
+    //               Navigator.pop(context);
+    //               Navigator.of(context).pop();
+    //             },
+    //           ),
+    //         ],
+    //       ),
+    //       barrierDismissible: false);
+    // });
 
     return;
   }
@@ -1881,6 +1891,50 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     // }
   }
 
+  bool verifyDimensionValue(String tankType) {
+    bool result = false;
+    switch (tankType) {
+      case Constants.TANK_TYPE_RECTANGLE:
+      case Constants.TANK_TYPE_HORIZONTAL_OVAL:
+      case Constants.TANK_TYPE_VERTICAL_OVAL:
+      case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
+        {
+          if (_lengthFormKey.currentState!.validate() &&
+              _heightFormKey.currentState!.validate() &&
+              _widthFormKey.currentState!.validate()) {
+            result = true;
+          }
+          break;
+        }
+      case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+      case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
+        {
+          if (_lengthFormKey.currentState!.validate() &&
+              _diameterFormKey.currentState!.validate()) {
+            result = true;
+          }
+          break;
+        }
+
+      case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
+      case Constants.TANK_TYPE_VERTICAL_CAPSULE:
+      case Constants.TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
+      case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
+        {
+          if (_diameterFormKey.currentState!.validate() &&
+              _sideLengthFormKey.currentState!.validate()) {
+            result = true;
+          }
+          break;
+        }
+      default:
+        result = false;
+    }
+
+    print('verifyDimensionValue[${tankType}]] result=${result} ');
+    return result;
+  }
+
   Future<Notify.Notification?> openTankConfigurationDialog() {
     return showDialog<Notify.Notification>(
       context: context,
@@ -1900,10 +1954,12 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                 padding: EdgeInsets.symmetric(),
                 color: Colors.limeAccent,
                 alignment: Alignment.topCenter,
-                child: Column(
-                  children: [
-                    TankDimensionConfig(device: this.device, selectedTankType: mSelectedTankType,),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      TankDimensionConfig(device: this.device, selectedTankType: mSelectedTankType, tankDialog: this.tankDialog,),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1917,10 +1973,17 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                 // onPressed: submitNotificationSettings,
                   onPressed: () {
                     // Validate returns true if the form is valid, or false otherwise.
-                    if (_emailFormKey.currentState!.validate()) {
+                    // if (_lengthFormKey.currentState!.validate() &&
+                    //     _diameterFormKey.currentState!.validate() &&
+                    //     _heightFormKey.currentState!.validate() &&
+                    //     _widthFormKey.currentState!.validate() &&
+                    //     _sideLengthFormKey.currentState!.validate()
+                    // ) {
+                    print('>>>Call verifyDimensionValue(${mSelectedTankType}');
+                    if(verifyDimensionValue(mSelectedTankType)) {
                       // If the form is valid, display a snackbar. In the real world,
                       // you'd often call a server or save the information in a database.
-                      updateNotificationSettings();
+                      updateTankDimensionSettings();
 
                       // ScaffoldMessenger.of(context).showSnackBar(
                       //   const SnackBar(content: Text('Updated Data')),
@@ -1931,9 +1994,9 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                           context: context,
                           builder: (_) =>
                               CupertinoAlertDialog(
-                                title: Text("Invalid Email"),
+                                title: Text("Invalid Tank Dimension Config Value"),
                                 content: Text(
-                                    "Please enter the correct email format.\ And submit again."),
+                                    "Please enter the correct tank dimension format.\ And submit again."),
                                 actions: [
                                   CupertinoDialogAction(
                                     child: Text("OK"),
@@ -2020,8 +2083,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                       onChanged: (bool? value) {
                         setState(() {
                           this.notification.isSendNotify = value!;
-                          // this.notificationDialog.isSendNotify = value!;
-                          // _checked = value!;
                           print('check value=${value}');
                         });
                       },
@@ -2052,7 +2113,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                         return null;
                       }
                     },
-                    // controller: TextEditingController(text: this.notificationDialog.notifyEmail),
                     autofocus: false,
                     decoration: InputDecoration(
                       label: Text(
@@ -2180,8 +2240,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
           magnification: 1.2,
           scrollController: FixedExtentScrollController(
               initialItem: initScrollIndex(pickerType)),
-          // onSelectedItemChanged: (index) => setState(() => this.index = index),
-          // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
           onSelectedItemChanged: (index) => setState(() {
             switch (pickerType) {
               case Constants.TEMP_LOWER:
@@ -2204,13 +2262,6 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                 }
             }
           }),
-          // onSelectedItemChanged: (int index) => setState(() {
-          //   this.selectedIndex = index;
-          //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
-          //   isSelected = this.selectedIndex == index;
-          //   print('isSelected=${isSelected}');
-          //
-          // }),
           selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
             background: Colors.orangeAccent.withOpacity(0.10),
           ),
@@ -2798,10 +2849,15 @@ class TempAndHumidCircularWidget extends StatelessWidget {
 class TankDimensionConfig extends StatefulWidget {
   final Device device;
   final String selectedTankType;
+  final Tank tankDialog;
+
+
 
   const TankDimensionConfig({Key? key,
     required this.device,
     required this.selectedTankType,
+    required this.tankDialog,
+
   }) : super(key: key);
 
   @override
@@ -2813,13 +2869,6 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
   bool _VisibilityHWL = true;
   bool _VisibilityLD = false;
   int _InitScrollIndex = 0;
-
-  final _heightFormKey = GlobalKey<FormState>();
-  final _widthFormKey = GlobalKey<FormState>();
-  final _lengthFormKey = GlobalKey<FormState>();
-  final _diameterFormKey = GlobalKey<FormState>();
-  final _sideLengthFormKey = GlobalKey<FormState>();
-
 
   @override
   void initState() {
@@ -2833,27 +2882,25 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
     print('_InitScrollIndex=${_InitScrollIndex}');
   }
 
-
-
   Key getDimensionKey(String dimensionType) {
     switch(dimensionType) {
       case Constants.DIMENSION_TYPE_LENGTH: {
-        return _lengthFormKey;
+        return _ShowDevicePageState._lengthFormKey;
       }
       case Constants.DIMENSION_TYPE_DIAMETER: {
-        return _diameterFormKey;
+        return _ShowDevicePageState._diameterFormKey;
       }
       case Constants.DIMENSION_TYPE_HEIGHT: {
-        return _heightFormKey;
+        return _ShowDevicePageState._heightFormKey;
       }
       case Constants.DIMENSION_TYPE_WIDTH: {
-        return _widthFormKey;
+        return _ShowDevicePageState._widthFormKey;
       }
       case Constants.DIMENSION_TYPE_SIDE_LENGTH: {
-        return _sideLengthFormKey;
+        return _ShowDevicePageState._sideLengthFormKey;
       }
       default: {
-        return _lengthFormKey;
+        return _ShowDevicePageState._lengthFormKey;
       }
     }
   }
@@ -2893,27 +2940,38 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
     switch(dimensionType) {
       case Constants.DIMENSION_TYPE_LENGTH: {
         widget.device.wLength = double.parse(value);
+        widget.tankDialog.wLength = double.parse(value);
+
         print('>> widget.device.wLength=${widget.device.wLength}');
+        print('>> widget.tankDialog.wLength=${widget.tankDialog.wLength}');
         break;
       }
       case Constants.DIMENSION_TYPE_DIAMETER: {
         widget.device.wDiameter = double.parse(value);
+        widget.tankDialog.wDiameter = double.parse(value);
         print('>> widget.device.wDiameter=${widget.device.wDiameter}');
+        print('>> widget.tank.wDiameter=${widget.tankDialog.wDiameter}');
         break;
       }
       case Constants.DIMENSION_TYPE_HEIGHT: {
         widget.device.wHeight = double.parse(value);
+        widget.tankDialog.wHeight = double.parse(value);
         print('>> widget.device.wHeight=${widget.device.wHeight}');
+        print('>> widget.tank.wHeight=${widget.tankDialog.wHeight}');
         break;
       }
       case Constants.DIMENSION_TYPE_WIDTH: {
         widget.device.wWidth = double.parse(value);
+        widget.tankDialog.wWidth = double.parse(value);
         print('>> widget.device.wWidth=${widget.device.wWidth}');
+        print('>> widget.tank.wWidth=${widget.tankDialog.wWidth}');
         break;
       }
       case Constants.DIMENSION_TYPE_SIDE_LENGTH: {
         widget.device.wSideLength = double.parse(value);
+        widget.tankDialog.wSideLength = double.parse(value);
         print('>> widget.device.wSideLength=${widget.device.wSideLength}');
+        print('>> widget.tank.wSideLength=${widget.tankDialog.wSideLength}');
         break;
       }
       default: {
@@ -2932,33 +2990,33 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
       list.add(Container(child: Row(
 
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
 
         children: [
           Text('$dimensionTypeName: ', style: TextStyle(color: Colors.black87),),
           // Text('_ ', style: TextStyle(color: Colors.black87),),
           Container(
-            width: 30,
+            width: 100,
             height: 40,
             child: Form(
               key: getDimensionKey(dimensionTypeName),
               child: TextFormField(
-
-                style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, ),
                 initialValue: getDimensionValue(dimensionTypeName),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a ${dimensionTypeName} tank dimension number.';
                   } else {
-                    if (!isNumeric(value!)) {
-                      return 'Invalid ${dimensionTypeName} tank dimension number';
-                    }
-                    setState(() {
-                      setDimensionValue(dimensionTypeName, value);
-                      print('*** ${dimensionTypeName} value=${value}');
-                    });
+                    // if (!isNumeric(value!)) {
+                    //   return 'Invalid ${dimensionTypeName} tank dimension number';
+                    // }
+                    // setState(() {
+                    //   // setDimensionValue(dimensionTypeName, value);
+                    //   print('*** ${dimensionTypeName} value=${value}');
+                    // });
 
                     return null;
                   }
@@ -3039,65 +3097,68 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(child: Text('${_SelectedTankType}', style: TextStyle(color: Colors.black87, fontSize: 18)),),
-        SizedBox(
-          height: displayHeight(context) * 0.4, // MediaQuery.of(context).size.height / 2,
-          width: displayWidth(context) * 0.6,
-          child: ListWheelScrollView(
-            controller: FixedExtentScrollController(initialItem: _InitScrollIndex),
-            itemExtent: displayWidth(context) * 0.35,
-            // itemExtent: 100,
-            children: buildTankTypesConfiguration(),
-            // children: items,
-            // value between 0 --> 0.01
-            perspective: 0.009,
-            diameterRatio: 1.5,
-            // default 2.0
-            // useMagnifier: true,
-            magnification: 1.1,
-            physics: FixedExtentScrollPhysics(),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(child: Text('${_SelectedTankType}', style: TextStyle(color: Colors.black87, fontSize: 18)),),
+          SizedBox(
+            height: displayHeight(context) * 0.4, // MediaQuery.of(context).size.height / 2,
+            width: displayWidth(context) * 0.6,
+            child: ListWheelScrollView(
+              controller: FixedExtentScrollController(initialItem: _InitScrollIndex),
+              itemExtent: displayWidth(context) * 0.35,
+              // itemExtent: 100,
+              children: buildTankTypesConfiguration(),
+              // children: items,
+              // value between 0 --> 0.01
+              perspective: 0.009,
+              diameterRatio: 1.5,
+              // default 2.0
+              // useMagnifier: true,
+              magnification: 1.1,
+              physics: FixedExtentScrollPhysics(),
 
-            onSelectedItemChanged: (index) {
-              print('index====$index');
-              setState(() {
-                _SelectedTankType =
-                    Constants.gTankTypesMap!.keys.elementAt(index);
-                switch (_SelectedTankType) {
-                  case Constants.TANK_TYPE_RECTANGLE:
-                  case Constants.TANK_TYPE_HORIZONTAL_OVAL:
-                  case Constants.TANK_TYPE_VERTICAL_OVAL:
-                  case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
-                    {
-                      _VisibilityHWL = true;
-                      _VisibilityLD = false;
-                      break;
-                    }
-                  case Constants.TANK_TYPE_VERTICAL_CYLINDER:
-                  case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
-                  case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
-                  case Constants.TANK_TYPE_VERTICAL_CAPSULE:
-                  case Constants
-                      .TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
-                  case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
-                    {
-                      _VisibilityHWL = false;
-                      _VisibilityLD = true;
-                      break;
-                    }
-                }
+              onSelectedItemChanged: (index) {
+                print('index====$index');
+                setState(() {
+                  _SelectedTankType =
+                      Constants.gTankTypesMap!.keys.elementAt(index);
+                  _ShowDevicePageState.mSelectedTankType = _SelectedTankType;
+                  switch (_SelectedTankType) {
+                    case Constants.TANK_TYPE_RECTANGLE:
+                    case Constants.TANK_TYPE_HORIZONTAL_OVAL:
+                    case Constants.TANK_TYPE_VERTICAL_OVAL:
+                    case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
+                      {
+                        _VisibilityHWL = true;
+                        _VisibilityLD = false;
+                        break;
+                      }
+                    case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+                    case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
+                    case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
+                    case Constants.TANK_TYPE_VERTICAL_CAPSULE:
+                    case Constants
+                        .TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
+                    case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
+                      {
+                        _VisibilityHWL = false;
+                        _VisibilityLD = true;
+                        break;
+                      }
+                  }
 
-                // toast('index====$index | mTankType=$mSelectedTankType | mVisibilityHWL=$mVisibilityHWL');
-              });
-            },
+                  // toast('index====$index | mTankType=$mSelectedTankType | mVisibilityHWL=$mVisibilityHWL');
+                });
+              },
+            ),
           ),
-        ),
-        Container(child: buildTankTypeDimensionForm(_SelectedTankType)),
-      ],
+          Container(child: buildTankTypeDimensionForm(_SelectedTankType)),
+        ],
+      ),
     );
   }
 }
