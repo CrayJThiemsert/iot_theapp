@@ -24,11 +24,13 @@ class Device extends Item{
   String notifyEmail;
 
   final String wTankType;
+  double wRangeDistance;
   double wFilledDepth;
   double wHeight;
   double wWidth;
   double wDiameter;
   double wSideLength;
+  double wCapacity;
   double wLength;
 
   // List<Header> headers;
@@ -55,12 +57,14 @@ class Device extends Item{
     double notifyTempHigher = 0,
     String notifyEmail = '',
     String wTankType = '',
-    double wFilledDepth = double.nan,
-    double wHeight = double.nan,
-    double wWidth = double.nan,
-    double wDiameter = double.nan,
-    double wSideLength = double.nan,
-    double wLength = double.nan,
+    double wRangeDistance = 0,
+    double wFilledDepth = 0,
+    double wHeight = 0,
+    double wWidth = 0,
+    double wDiameter = 0,
+    double wSideLength = 0,
+    double wCapacity = 0,
+    double wLength = 0,
 
     // List<Header> headers,
     // List<ItemData> itemDatas,
@@ -86,12 +90,14 @@ class Device extends Item{
       this.notifyEmail = notifyEmail ?? '',
       this.wTankType = wTankType ?? '',
 
-      this.wFilledDepth = double.nan,
-      this.wHeight = double.nan,
-      this.wWidth = double.nan,
-      this.wDiameter = double.nan,
-      this.wSideLength = double.nan,
-      this.wLength = double.nan
+      this.wFilledDepth = wFilledDepth ?? 0,
+      this.wRangeDistance = wRangeDistance ?? 0,
+      this.wHeight = wHeight ?? 0,
+      this.wWidth = wWidth ?? 0,
+      this.wDiameter = wDiameter ?? 0,
+      this.wSideLength = wSideLength ?? 0,
+      this.wCapacity = wCapacity ?? 0,
+      this.wLength = wLength ?? 0
       // this.headers = headers,
       // this.itemDatas = itemDatas,
       // this.topic = topic
@@ -118,11 +124,13 @@ class Device extends Item{
 
     String? notifyEmail,
     String? wTankType,
+    double? wRangeDistance,
     double? wFilledDepth,
     double? wHeight,
     double? wWidth,
     double? wDiameter,
     double? wSideLength,
+    double? wCapacity,
     double? wLength,
 
     // List<Header> headers,
@@ -150,11 +158,14 @@ class Device extends Item{
       notifyEmail: notifyEmail ?? this.notifyEmail,
       wTankType: wTankType ?? this.wTankType,
 
+      wRangeDistance: wRangeDistance ?? this.wRangeDistance,
       wFilledDepth: wFilledDepth ?? this.wFilledDepth,
+
       wHeight: wHeight ?? this.wHeight,
       wWidth: wWidth ?? this.wWidth,
       wDiameter: wDiameter ?? this.wDiameter,
       wSideLength: wSideLength ?? this.wSideLength,
+      wCapacity: wCapacity ?? this.wCapacity,
       wLength: wLength ?? this.wLength,
 
       // headers: headers ?? this.headers,
@@ -184,10 +195,12 @@ class Device extends Item{
       notifyEmail.hashCode ^
       wTankType.hashCode ^
       wFilledDepth.hashCode ^
+      wRangeDistance.hashCode ^
       wHeight.hashCode ^
       wWidth.hashCode ^
       wDiameter.hashCode ^
       wSideLength.hashCode ^
+      wCapacity.hashCode ^
       wLength.hashCode
   ;
 
@@ -215,12 +228,14 @@ class Device extends Item{
 
           notifyEmail == other.notifyEmail &&
           wTankType == other.wTankType &&
-
+          wRangeDistance == other.wRangeDistance &&
           wFilledDepth == other.wFilledDepth &&
+
           wHeight == other.wHeight &&
           wWidth == other.wWidth &&
           wDiameter == other.wDiameter &&
           wSideLength == other.wSideLength &&
+          wCapacity == other.wCapacity &&
           wLength == other.wLength &&
 
           name == other.name; // &&
@@ -232,11 +247,14 @@ class Device extends Item{
   String toString() {
     return 'Device { id: $id, uid: $uid, index: $index, name: $name, mode: $mode, localip: $localip, readingInterval: $readingInterval, humidity: $humidity, temperature: $temperature, readVoltage: $readVoltage, updatedWhen: $updatedWhen, notifyHumidLower: $notifyHumidLower, notifyHumidHigher: $notifyHumidHigher, notifyTempLower: $notifyTempLower, notifyTempHigher: $notifyTempHigher, notifyEmail: $notifyEmail, '
         'wTankType: $wTankType,'
+        'wRangeDistance: $wRangeDistance, '
         'wFilledDepth: $wFilledDepth,'
+
         'wHeight: $wHeight,'
         'wWidth: $wWidth,'
         'wDiameter: $wDiameter,'
         'wSideLength: $wSideLength,'
+        'wCapacity: $wCapacity,'
         'wLength: $wLength,'
         '}'; //, headers: $headers, itemDatas: ${itemDatas}, topic: ${topic} }';
   }

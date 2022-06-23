@@ -37,12 +37,14 @@ class WeatherHistory extends Equatable {
           temperature: double.nan,
           readVoltage: double.nan,
 
+          wRangeDistance: double.nan,
           wFilledDepth: double.nan,
           wHeight: double.nan,
           wWidth: double.nan,
           wDiameter: double.nan,
           wSideLength: double.nan,
           wLength: double.nan,
+          wCapacity: double.nan,
       );
       return WeatherHistory(
         key: '',
@@ -65,12 +67,14 @@ class WeatherHistory extends Equatable {
         temperature: double.nan,
         readVoltage: double.nan,
 
+        wRangeDistance: double.nan,
         wFilledDepth: double.nan,
         wHeight: double.nan,
         wWidth: double.nan,
         wDiameter: double.nan,
         wSideLength: double.nan,
         wLength: double.nan,
+        wCapacity: double.nan,
     );
     return WeatherHistory(
       key: snap.key ?? '',
@@ -113,12 +117,14 @@ class WeatherData {
     required this.humidity,
     required this.deviceId,
     required this.readVoltage,
+    required this.wRangeDistance,
     required this.wFilledDepth,
     required this.wHeight,
     required this.wWidth,
     required this.wDiameter,
     required this.wSideLength,
     required this.wLength,
+    required this.wCapacity,
   });
 
   String uid;
@@ -127,12 +133,14 @@ class WeatherData {
   double humidity = double.nan;
   double readVoltage = double.nan;
 
+  double wRangeDistance = double.nan;
   double wFilledDepth = double.nan;
   double wHeight = double.nan;
   double wWidth = double.nan;
   double wDiameter = double.nan;
   double wSideLength = double.nan;
   double wLength = double.nan;
+  double wCapacity = double.nan;
 
 
   factory WeatherData.fromJson(Map<dynamic, dynamic> json) {
@@ -144,12 +152,14 @@ class WeatherData {
       humidity: json['humidity'].toDouble() ?? 0,
       readVoltage: json['readVoltage'].toDouble() ?? 0,
 
+      wRangeDistance: (json['wRangeDistance'] ?? 0).toDouble() ?? 0,
       wFilledDepth: (json['wFilledDepth'] ?? 0).toDouble() ?? 0,
       wHeight: (json['wHeight'] ?? 0).toDouble() ?? 0,
       wWidth: (json['wWidth'] ?? 0).toDouble() ?? 0,
       wDiameter: (json['wDiameter'] ?? 0).toDouble() ?? 0,
       wSideLength: (json['wSideLength'] ?? 0).toDouble() ?? 0,
       wLength: (json['wLength'] ?? 0).toDouble() ?? 0,
+      wCapacity: (json['wCapacity'] ?? 0).toDouble() ?? 0,
     );
   }
 
@@ -180,12 +190,14 @@ class WeatherData {
     "deviceId": deviceId,
     "readVoltage": readVoltage,
 
+    "wRangeDistance": wRangeDistance,
     "wFilledDepth": wFilledDepth,
     "wHeight": wHeight,
     "wWidth": wWidth,
     "wDiameter": wDiameter,
     "wSideLength": wSideLength,
     "wLength": wLength,
+    "wCapacity": wCapacity,
   };
 
   @override
@@ -195,11 +207,13 @@ class WeatherData {
         'humidity: $humidity, '
         'temperature: $temperature, '
         'readVoltage: $readVoltage, '
+        'wRangeDistance: $wRangeDistance, '
         'wFilledDepth: $wFilledDepth, '
         'wHeight: $wHeight, '
         'wWidth: $wWidth, '
         'wDiameter: $wDiameter, '
         'wSideLength: $wSideLength, '
-        'wLength: $wLength, ';
+        'wLength: $wLength, '
+        'wCapacity: $wCapacity';
   }
 }

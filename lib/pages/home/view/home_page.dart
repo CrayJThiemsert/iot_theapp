@@ -24,14 +24,14 @@ class _HomePageState extends State<HomePage> {
   final fb = FirebaseDatabase.instance;
   final myController = TextEditingController();
   final name = "Name2";
-  final databaseReference = FirebaseDatabase.instance.reference();
+  final databaseReference = FirebaseDatabase.instance.ref();
 
   // -------------------------
   int _counter = 0;
-  late DatabaseReference _counterRef;
-  late DatabaseReference _messagesRef;
-  late StreamSubscription<DatabaseEvent> _counterSubscription;
-  late StreamSubscription<DatabaseEvent> _messagesSubscription;
+  // late DatabaseReference _counterRef;
+  // late DatabaseReference _messagesRef;
+  // late StreamSubscription<DatabaseEvent> _counterSubscription;
+  // late StreamSubscription<DatabaseEvent> _messagesSubscription;
   bool _anchorToBottom = false;
 
   String _kTestKey = 'Hello';
@@ -43,10 +43,10 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     // Demonstrates configuring to the database using a file
-    _counterRef = FirebaseDatabase.instance.reference().child('counter');
+    // _counterRef = FirebaseDatabase.instance.reference().child('counter');
     // Demonstrates configuring the database directly
     final FirebaseDatabase database = FirebaseDatabase(app: widget.app);
-    _messagesRef = database.reference().child('messages');
+    // _messagesRef = database.reference().child('messages');
     // database.reference().child('counter').once().then((DataSnapshot snapshot) {
     //     print('Connected to second database and read ${snapshot.value}');
     //   }, onError: (Object o) {
@@ -56,25 +56,25 @@ class _HomePageState extends State<HomePage> {
 
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    _counterRef.keepSynced(true);
-    _counterSubscription = _counterRef.onValue.listen((DatabaseEvent event) {
-      setState(() {
-        _error = null;
-        _counter = (event.snapshot.value ?? 0) as int;
-      });
-    }, onError: (Object o) {
-      final FirebaseException error = o as FirebaseException;
-      setState(() {
-        _error = error;
-      });
-    });
-    _messagesSubscription =
-        _messagesRef.limitToLast(10).onChildAdded.listen((DatabaseEvent event) {
-          print('Child added: ${event.snapshot.value}');
-        }, onError: (Object o) {
-          final FirebaseException error = o as FirebaseException;
-          print('Error: ${error.code} ${error.message}');
-        });
+    // _counterRef.keepSynced(true);
+    // _counterSubscription = _counterRef.onValue.listen((DatabaseEvent event) {
+    //   setState(() {
+    //     _error = null;
+    //     _counter = (event.snapshot.value ?? 0) as int;
+    //   });
+    // }, onError: (Object o) {
+    //   final FirebaseException error = o as FirebaseException;
+    //   setState(() {
+    //     _error = error;
+    //   });
+    // });
+    // _messagesSubscription =
+    //     _messagesRef.limitToLast(10).onChildAdded.listen((DatabaseEvent event) {
+    //       print('Child added: ${event.snapshot.value}');
+    //     }, onError: (Object o) {
+    //       final FirebaseException error = o as FirebaseException;
+    //       print('Error: ${error.code} ${error.message}');
+    //     });
   }
 
   @override
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> {
     myController.dispose();
     super.dispose();
 
-    _messagesSubscription.cancel();
-    _counterSubscription.cancel();
+    // _messagesSubscription.cancel();
+    // _counterSubscription.cancel();
   }
 }

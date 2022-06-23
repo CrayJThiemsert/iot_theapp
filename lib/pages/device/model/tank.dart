@@ -13,12 +13,14 @@ class Tank extends Item{
   final String updatedWhen;
 
   String wTankType;
+  double wRangeDistance;
   double wFilledDepth;
   double wHeight;
   double wWidth;
   double wDiameter;
   double wSideLength;
   double wLength;
+  double wCapacity;
 
   Tank({
     String? id,
@@ -30,12 +32,14 @@ class Tank extends Item{
     String updatedWhen = '',
 
     String wTankType = '',
+    double wRangeDistance = 0,
     double wFilledDepth = 0,
     double wHeight = 0,
     double wWidth = 0,
     double wDiameter = 0,
     double wSideLength = 0,
     double wLength = 0,
+    double wCapacity = 0,
 
   })
     : this.index = index,
@@ -48,13 +52,14 @@ class Tank extends Item{
 
 
       this.wTankType = wTankType ?? '',
+      this.wRangeDistance = wRangeDistance ?? 0,
       this.wFilledDepth = wFilledDepth ?? 0,
       this.wHeight = wHeight ?? 0,
       this.wWidth = wWidth ?? 0,
       this.wDiameter = wDiameter ?? 0,
       this.wSideLength = wSideLength ?? 0,
-      this.wLength = wLength ?? 0
-
+      this.wLength = wLength ?? 0,
+      this.wCapacity = wCapacity ?? 0
     ;
 
   Tank copyWith({
@@ -66,12 +71,14 @@ class Tank extends Item{
     String? updatedWhen,
 
     String? wTankType,
+    double? wRangeDistance,
     double? wFilledDepth,
     double? wHeight,
     double? wWidth,
     double? wDiameter,
     double? wSideLength,
     double? wLength,
+    double? wCapacity,
 
   }) {
     return Tank(
@@ -83,12 +90,14 @@ class Tank extends Item{
       updatedWhen: updatedWhen ?? this.updatedWhen,
 
       wTankType: wTankType ?? this.wTankType,
+      wRangeDistance: wRangeDistance ?? this.wRangeDistance,
       wFilledDepth: wFilledDepth ?? this.wFilledDepth,
       wHeight: wHeight ?? this.wHeight,
       wWidth: wWidth ?? this.wWidth,
       wDiameter: wDiameter ?? this.wDiameter,
       wSideLength: wSideLength ?? this.wSideLength,
       wLength: wLength ?? this.wLength,
+      wCapacity: wCapacity ?? this.wCapacity,
     );
   }
 
@@ -102,11 +111,13 @@ class Tank extends Item{
       updatedWhen.hashCode ^
       wTankType.hashCode ^
       wFilledDepth.hashCode ^
+      wRangeDistance.hashCode ^
       wHeight.hashCode ^
       wWidth.hashCode ^
       wDiameter.hashCode ^
       wSideLength.hashCode ^
-      wLength.hashCode;
+      wLength.hashCode ^
+      wCapacity.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -121,6 +132,7 @@ class Tank extends Item{
           updatedWhen == other.updatedWhen &&
 
           wTankType == other.wTankType &&
+          wRangeDistance == other.wRangeDistance &&
           wFilledDepth == other.wFilledDepth &&
           wHeight == other.wHeight &&
           wWidth == other.wWidth &&
@@ -128,6 +140,7 @@ class Tank extends Item{
           wDiameter == other.wDiameter &&
           wSideLength == other.wSideLength &&
           wLength == other.wLength &&
+          wCapacity == other.wCapacity &&
 
           name == other.name; // &&
 
@@ -140,12 +153,14 @@ class Tank extends Item{
         'deviceId: $deviceId, '
         'updatedWhen: $updatedWhen, '
         'wTankType: $wTankType, '
+        'wRangeDistance: $wRangeDistance, '
         'wFilledDepth: $wFilledDepth, '
         'wHeight: $wHeight, '
         'wWidth: $wWidth, '
         'wDiameter: $wDiameter, '
         'wSideLength: $wSideLength, '
-        'wLength: $wLength}';
+        'wLength: $wLength, '
+        'wCapacity: $wCapacity}';
   }
 
   ItemEntity toEntity() {
@@ -167,12 +182,14 @@ class Tank extends Item{
       uid: json['uid'] ?? '',
       deviceId: json['deviceId'] ?? '',
       wTankType: json['wTankType'] ?? '',
-      wFilledDepth: json['wFilledDepth'].toDouble() ?? 0,
-      wHeight: json['wHeight'].toDouble() ?? 0,
-      wWidth: json['wWidth'].toDouble() ?? 0,
-      wDiameter: json['wDiameter'].toDouble() ?? 0,
-      wSideLength: json['wSideLength'].toDouble() ?? 0,
-      wLength: json['wLength'].toDouble() ?? 0,
+      wRangeDistance: json['wRangeDistance']?.toDouble() ?? 0,
+      wFilledDepth: json['wFilledDepth']?.toDouble() ?? 0,
+      wHeight: json['wHeight']?.toDouble() ?? 0,
+      wWidth: json['wWidth']?.toDouble() ?? 0,
+      wDiameter: json['wDiameter']?.toDouble() ?? 0,
+      wSideLength: json['wSideLength']?.toDouble() ?? 0,
+      wLength: json['wLength']?.toDouble() ?? 0,
+      wCapacity: json['wCapacity']?.toDouble() ?? 0,
     );
   }
 

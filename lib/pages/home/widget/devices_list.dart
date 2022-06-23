@@ -10,6 +10,7 @@ import 'package:iot_theapp/utils/constants.dart';
 
 
 import 'package:intl/intl.dart';
+import 'package:iot_theapp/utils/sizes_helpers.dart';
 
 class DevicesList extends StatefulWidget {
   @override
@@ -35,6 +36,8 @@ class _DevicesListState extends State<DevicesList> {
               Map<dynamic, dynamic> values = snapshot.data!.snapshot.value as Map;
               values.forEach((key, values) {
                 print('key=${key}');
+                print('wRangeDistance=[${values['wRangeDistance']}]');
+                print('wCapacity=[${values['wCapacity']}]');
                 print('temperature=[${values['temperature']}]');
                 print('parseDouble temperature=[${globals.parseDouble(values['temperature'])}]');
                 // lists.add(key);
@@ -63,9 +66,15 @@ class _DevicesListState extends State<DevicesList> {
                   notifyTempHigher: globals.parseDouble(values['notifyTempHigher'] ?? 0),
                   notifyEmail: values['notifyEmail'] ?? '',
 
-
-
                   wTankType: values['wTankType'] ?? '',
+                  wRangeDistance: globals.parseDouble(values['wRangeDistance'] ?? 0),
+                  wCapacity: globals.parseDouble(values['wCapacity'] ?? 0),
+                  wFilledDepth: globals.parseDouble(values['wFilledDepth'] ?? 0),
+                  wHeight: globals.parseDouble(values['wHeight'] ?? 0),
+                  wWidth: globals.parseDouble(values['wWidth'] ?? 0),
+                  wDiameter: globals.parseDouble(values['wDiameter'] ?? 0),
+                  wSideLength: globals.parseDouble(values['wSideLength'] ?? 0),
+                  wLength: globals.parseDouble(values['wLength'] ?? 0),
 
                 ));
               });
@@ -159,9 +168,12 @@ class _DeviceCardState extends State<DeviceCard> {
                         Text('${globals.getDateCard(widget.device.updatedWhen)}',
                           style: subtitleStyle,
                         ),
-                        Text('${widget.device.readVoltage} volt',
+                        Text('${widget.device.wRangeDistance} mm',
                           style: subtitleStyle,
                         ),
+                        // Text('${widget.device.readVoltage} volt',
+                        //   style: subtitleStyle,
+                        // ),
                       ],
                     ),
                   ),
@@ -183,7 +195,7 @@ class _DeviceCardState extends State<DeviceCard> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            Text('${numberFormat.format(widget.device.temperature)} \u2103', style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
+                            Text('${numberFormat.format(widget.device.temperature)} \u2103', style: TextStyle(fontSize: 2 * (displayHeight(context) * 0.01), color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
                             Divider(
                               color: Colors.cyanAccent, //.withOpacity(0.2),
                               thickness: 1,
@@ -192,7 +204,7 @@ class _DeviceCardState extends State<DeviceCard> {
                               indent: 2,
                               endIndent: 2,
                             ),
-                            Text('${numberFormat.format(widget.device.humidity)} %', style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
+                            Text('${numberFormat.format(widget.device.humidity)} %', style: TextStyle(fontSize: 2 * (displayHeight(context) * 0.01), color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
                           ],
                       ),
                     ),
