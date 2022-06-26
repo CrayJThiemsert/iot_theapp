@@ -46,6 +46,13 @@ class Constants extends InheritedWidget {
   static const TANK_TYPE_HORIZONTAL_DISH_ENDS = 'Horizontal Dish Ends';
   static const TANK_TYPE_HORIZONTAL_ELLIPSE = 'Horizontal Ellipse';
 
+  // Filled Tank Percentage Number
+  static const FILLED_PERCENTAGE_0 = '0';
+  static const FILLED_PERCENTAGE_25 = '25';
+  static const FILLED_PERCENTAGE_50 = '50';
+  static const FILLED_PERCENTAGE_75 = '75';
+  static const FILLED_PERCENTAGE_100 = '100';
+
   // Dimension Types
   static const DIMENSION_TYPE_CAPACITY = 'Capacity (c)';
   static const DIMENSION_TYPE_LENGTH = 'Length (l)';
@@ -81,6 +88,76 @@ class Constants extends InheritedWidget {
     TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL: 'images/tanks/base_horizontal_2_1_elliptical.jpg',
     TANK_TYPE_HORIZONTAL_DISH_ENDS: 'images/tanks/base_horizontal_dish_ends.jpg',
     TANK_TYPE_HORIZONTAL_ELLIPSE: 'images/tanks/base_horizontal_ellipse.jpg',
+  };
+
+  // Tank Types
+  static const Map<String, Map<String, String>> gFilledTankPercentageImagesMap = {
+    TANK_TYPE_SIMPLE: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_CYLINDER: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_VERTICAL_CYLINDER: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_RECTANGLE: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_OVAL: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_VERTICAL_OVAL: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_CAPSULE: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_VERTICAL_CAPSULE: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_DISH_ENDS: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
+    TANK_TYPE_HORIZONTAL_ELLIPSE: {
+      FILLED_PERCENTAGE_0: 'images/tanks/simple_tank_type_0.png',
+      FILLED_PERCENTAGE_25: 'images/tanks/simple_tank_type_25.png',
+      FILLED_PERCENTAGE_50: 'images/tanks/simple_tank_type_50.png',
+      FILLED_PERCENTAGE_75: 'images/tanks/simple_tank_type_75.png',
+      FILLED_PERCENTAGE_100: 'images/tanks/simple_tank_type_100.png'},
   };
 
   /**

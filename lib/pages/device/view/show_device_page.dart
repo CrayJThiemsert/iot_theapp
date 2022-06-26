@@ -213,9 +213,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     '100',
   ];
 
-  static String mSelectedTankType = Constants.TANK_TYPE_VERTICAL_CYLINDER;
+  static String mSelectedTankType = Constants.TANK_TYPE_SIMPLE;
   bool mVisibilityHWL = false;
   bool mVisibilityLD = false;
+  double mPercentage = -1;
 
   // int selectedIndex = 0;
 
@@ -340,7 +341,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
 
     super.initState();
     notification = Notify.Notification();
-    mSelectedTankType = device.wTankType;
+    mSelectedTankType = (device.wTankType != "") ? device.wTankType : Constants.TANK_TYPE_SIMPLE;
 
     print('mSelectedTankType=${mSelectedTankType}');
 
@@ -473,8 +474,8 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         // }
       );
 
-  String calculateFilledPercentage(String tankType, WeatherHistory weatherHistory) {
-    String result = '';
+  double calculateFilledPercentage(String tankType, WeatherHistory weatherHistory) {
+    double result = 0;
     switch(tankType) {
       // Simple Tank
       case Constants.TANK_TYPE_SIMPLE: {
@@ -490,7 +491,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         print("Filled depth=$filledDepth");
         print("percentage=$percentage");
 
-        result = globals.formatNumber(percentage);
+        result = percentage;
         break;
       }
       // Horizontal Cylinder Tank
@@ -507,7 +508,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         print("Filled depth=$filledDepth");
         print("percentage=$percentage");
 
-        result = globals.formatNumber(percentage);
+        result = percentage;
         break;
       }
 
@@ -525,7 +526,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         print("rangeDistance=$rangeDistance");
         print("Filled depth=$filledDepth");
 
-        result = globals.formatNumber(percentage);
+        result = percentage;
         break;
       }
 
@@ -536,7 +537,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -547,7 +548,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -558,7 +559,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -569,7 +570,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -580,7 +581,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -591,7 +592,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -602,7 +603,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
 
@@ -613,7 +614,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = volume;
         break;
       }
       default: {
@@ -621,7 +622,9 @@ class _ShowDevicePageState extends State<ShowDevicePage>
       }
     }
 
-    return '${result}%';
+
+
+    return result;
   }
 
   String calculateFilledDepth(String tankType, WeatherHistory weatherHistory) {
@@ -776,6 +779,16 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     // dimensions default in cm
 
     switch(tankType) {
+      // Simple Tank
+      // Capacity = Volume
+      case Constants.TANK_TYPE_SIMPLE: {
+        double volume = _ShowDevicePageState.tank.wCapacity;
+        print("Volume of the tank=$volume");
+
+        result = globals.formatNumber(volume);
+        break;
+      }
+
       // Horizontal Cylinder Tank
       // V(tank) = πr2l
       case Constants.TANK_TYPE_HORIZONTAL_CYLINDER: {
@@ -786,7 +799,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         volume = volume / 1000; // to centimeters
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
       // Vertical Cylinder Tank
@@ -811,7 +824,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -822,7 +835,8 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
+
         break;
       }
 
@@ -833,7 +847,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -844,7 +858,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -855,7 +869,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -866,7 +880,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -877,7 +891,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
 
@@ -888,12 +902,67 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         double volume=pie*(radius*radius)*height;
         print("Volume of the cylinder=$volume");
 
-        result = volume.toString();
+        result = globals.formatNumber(volume);
         break;
       }
       default: {
         break;
       }
+    }
+    return result;
+  }
+
+  String getFilledTankPercentageImage(String tankType) {
+    String result = '';
+    switch (tankType) {
+      case Constants.TANK_TYPE_RECTANGLE:
+      case Constants.TANK_TYPE_HORIZONTAL_OVAL:
+      case Constants.TANK_TYPE_VERTICAL_OVAL:
+      case Constants.TANK_TYPE_HORIZONTAL_ELLIPSE:
+        {
+
+          break;
+        }
+      // case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+      //   {
+      //
+      //     break;
+      //   }
+      case Constants.TANK_TYPE_HORIZONTAL_CYLINDER:
+        {
+
+          break;
+        }
+
+      case Constants.TANK_TYPE_VERTICAL_CYLINDER:
+      case Constants.TANK_TYPE_SIMPLE:
+        {
+          if(mPercentage <= 100 && mPercentage > 75) {
+            // Constants.gFilledTankPercentageImagesMap[tankType].keys!.elementAt(0)
+            // _SelectedTankType = Constants.gTankTypesMap!.keys.elementAt(index);
+            result = Constants.gFilledTankPercentageImagesMap[tankType]!.values.elementAt(4);
+          } else  if(mPercentage <= 75 && mPercentage > 50) {
+            result = Constants.gFilledTankPercentageImagesMap[tankType]!.values.elementAt(3);
+          } else  if(mPercentage <= 50 && mPercentage > 25) {
+            result = Constants.gFilledTankPercentageImagesMap[tankType]!.values.elementAt(2);
+          } else  if(mPercentage <= 25 && mPercentage > 0) {
+            result = Constants.gFilledTankPercentageImagesMap[tankType]!.values.elementAt(1);
+          } else {
+            result = Constants.gFilledTankPercentageImagesMap[tankType]!.values.elementAt(0);
+          }
+          break;
+        }
+
+      case Constants.TANK_TYPE_HORIZONTAL_CAPSULE:
+      case Constants.TANK_TYPE_VERTICAL_CAPSULE:
+      case Constants.TANK_TYPE_HORIZONTAL_2_1_ELLIPTICAL:
+      case Constants.TANK_TYPE_HORIZONTAL_DISH_ENDS:
+        {
+
+          break;
+        }
+      default:
+        result = result;
     }
     return result;
   }
@@ -1053,6 +1122,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                                 'this.notification.notifyHumidLower=${this
                                     .notification.notifyHumidLower}');
                           }
+
+
+                          mPercentage = calculateFilledPercentage(mSelectedTankType, weatherHistory);
+
                           return Scaffold(
                             appBar: AppBar(
                               title: Text(
@@ -1095,7 +1168,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                                           .center,
                                       // mainAxisSize: MainAxisSize.max,
                                       children: [
-                                        Container(child: Text('${calculateFilledPercentage(mSelectedTankType, weatherHistory)} Full')),
+                                        Container(child: Text('${globals.formatNumber(mPercentage)}% Full')),
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           mainAxisAlignment:
@@ -1108,7 +1181,9 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                                                   0.3,
                                               child: Image(
                                                 image: AssetImage(
-                                                    'images/tanks/base_vertical_cylinder.jpg'),
+                                                    // 'images/tanks/base_vertical_cylinder.jpg'),
+                                                    // Constants.gTankImagesMap[mSelectedTankType]!),
+                                                    getFilledTankPercentageImage(mSelectedTankType)),
                                               ),
                                             ),
                                             Container(
