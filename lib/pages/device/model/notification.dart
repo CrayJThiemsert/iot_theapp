@@ -16,6 +16,8 @@ class Notification extends Item{
   double notifyHumidHigher;
   double notifyTempLower;
   double notifyTempHigher;
+  double notifyTOFDistanceLower;
+  double notifyTOFDistanceHigher;
   String notifyEmail;
   bool isSendNotify;
 
@@ -34,6 +36,8 @@ class Notification extends Item{
     double notifyHumidHigher = 0,
     double notifyTempLower = 0,
     double notifyTempHigher = 0,
+    double notifyTOFDistanceHigher = 0,
+    double notifyTOFDistanceLower = 0,
     String notifyEmail = '',
     bool isSendNotify = false,
   })
@@ -50,6 +54,8 @@ class Notification extends Item{
       this.notifyHumidHigher = notifyHumidHigher ?? 0,
       this.notifyTempLower = notifyTempLower ?? 0,
       this.notifyTempHigher = notifyTempHigher ?? 0,
+      this.notifyTOFDistanceHigher = notifyTOFDistanceHigher ?? 0,
+      this.notifyTOFDistanceLower = notifyTOFDistanceLower ?? 0,
       this.notifyEmail = notifyEmail ?? '',
         this.isSendNotify = isSendNotify ?? false
 
@@ -67,6 +73,8 @@ class Notification extends Item{
     double? notifyHumidHigher,
     double? notifyTempLower,
     double? notifyTempHigher,
+    double? notifyTOFDistanceLower,
+    double? notifyTOFDistanceHigher,
 
     String? notifyEmail,
     bool? isSendNotify,
@@ -84,6 +92,8 @@ class Notification extends Item{
       notifyHumidHigher: notifyHumidHigher ?? this.notifyHumidHigher,
       notifyTempLower: notifyTempLower ?? this.notifyTempLower,
       notifyTempHigher: notifyTempHigher ?? this.notifyTempHigher,
+      notifyTOFDistanceLower: notifyTOFDistanceLower ?? this.notifyTOFDistanceLower,
+      notifyTOFDistanceHigher: notifyTOFDistanceHigher ?? this.notifyTOFDistanceHigher,
       notifyEmail: notifyEmail ?? this.notifyEmail,
       isSendNotify: isSendNotify ?? this.isSendNotify,
     );
@@ -101,6 +111,8 @@ class Notification extends Item{
       notifyHumidHigher.hashCode ^
       notifyTempLower.hashCode ^
       notifyTempHigher.hashCode ^
+      notifyTOFDistanceLower.hashCode ^
+      notifyTOFDistanceHigher.hashCode ^
       notifyEmail.hashCode ^
       isSendNotify.hashCode;
 
@@ -120,6 +132,8 @@ class Notification extends Item{
           notifyHumidHigher == other.notifyHumidHigher &&
           notifyTempLower == other.notifyTempLower &&
           notifyTempHigher == other.notifyTempHigher &&
+          notifyTOFDistanceLower == other.notifyTOFDistanceLower &&
+          notifyTOFDistanceHigher == other.notifyTOFDistanceHigher &&
 
           notifyEmail == other.notifyEmail &&
           isSendNotify == other.isSendNotify &&
@@ -151,10 +165,12 @@ class Notification extends Item{
       deviceId: json['deviceId'] ?? '',
       notifyEmail: json['notifyEmail'] ?? '',
       isSendNotify: json['isSendNotify'] ?? false,
-      notifyHumidLower: json['notifyHumidLower'].toDouble() ?? 0,
-      notifyHumidHigher: json['notifyHumidHigher'].toDouble() ?? 0,
-      notifyTempLower: json['notifyTempLower'].toDouble() ?? 0,
-      notifyTempHigher: json['notifyTempHigher'].toDouble() ?? 0,
+      notifyHumidLower: json['notifyHumidLower']?.toDouble() ?? 0,
+      notifyHumidHigher: json['notifyHumidHigher']?.toDouble() ?? 0,
+      notifyTempLower: json['notifyTempLower']?.toDouble() ?? 0,
+      notifyTempHigher: json['notifyTempHigher']?.toDouble() ?? 0,
+      notifyTOFDistanceLower: json['notifyTOFDistanceLower']?.toDouble() ?? 0,
+      notifyTOFDistanceHigher: json['notifyTOFDistanceHigher']?.toDouble() ?? 0,
     );
   }
 

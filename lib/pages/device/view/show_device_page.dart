@@ -109,109 +109,109 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   late TextEditingController name_controller;
   String name = '';
   // static List<String> pickerValues = ['0', '1',];
-  static List<String> pickerValues = [
-    '0',
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    '11',
-    '12',
-    '13',
-    '14',
-    '15',
-    '16',
-    '17',
-    '18',
-    '19',
-    '20',
-    '21',
-    '22',
-    '23',
-    '24',
-    '25',
-    '26',
-    '27',
-    '28',
-    '29',
-    '30',
-    '31',
-    '32',
-    '33',
-    '34',
-    '35',
-    '36',
-    '37',
-    '38',
-    '39',
-    '40',
-    '41',
-    '42',
-    '43',
-    '44',
-    '45',
-    '46',
-    '47',
-    '48',
-    '49',
-    '50',
-    '51',
-    '52',
-    '53',
-    '54',
-    '55',
-    '56',
-    '57',
-    '58',
-    '59',
-    '60',
-    '61',
-    '62',
-    '63',
-    '64',
-    '65',
-    '66',
-    '67',
-    '68',
-    '69',
-    '70',
-    '71',
-    '72',
-    '73',
-    '74',
-    '75',
-    '76',
-    '77',
-    '78',
-    '79',
-    '80',
-    '81',
-    '82',
-    '83',
-    '84',
-    '85',
-    '86',
-    '87',
-    '88',
-    '89',
-    '90',
-    '91',
-    '92',
-    '93',
-    '94',
-    '95',
-    '96',
-    '97',
-    '98',
-    '99',
-    '100',
-  ];
+  // static List<String> pickerHTValues = [
+  //   '0',
+  //   '1',
+  //   '2',
+  //   '3',
+  //   '4',
+  //   '5',
+  //   '6',
+  //   '7',
+  //   '8',
+  //   '9',
+  //   '10',
+  //   '11',
+  //   '12',
+  //   '13',
+  //   '14',
+  //   '15',
+  //   '16',
+  //   '17',
+  //   '18',
+  //   '19',
+  //   '20',
+  //   '21',
+  //   '22',
+  //   '23',
+  //   '24',
+  //   '25',
+  //   '26',
+  //   '27',
+  //   '28',
+  //   '29',
+  //   '30',
+  //   '31',
+  //   '32',
+  //   '33',
+  //   '34',
+  //   '35',
+  //   '36',
+  //   '37',
+  //   '38',
+  //   '39',
+  //   '40',
+  //   '41',
+  //   '42',
+  //   '43',
+  //   '44',
+  //   '45',
+  //   '46',
+  //   '47',
+  //   '48',
+  //   '49',
+  //   '50',
+  //   '51',
+  //   '52',
+  //   '53',
+  //   '54',
+  //   '55',
+  //   '56',
+  //   '57',
+  //   '58',
+  //   '59',
+  //   '60',
+  //   '61',
+  //   '62',
+  //   '63',
+  //   '64',
+  //   '65',
+  //   '66',
+  //   '67',
+  //   '68',
+  //   '69',
+  //   '70',
+  //   '71',
+  //   '72',
+  //   '73',
+  //   '74',
+  //   '75',
+  //   '76',
+  //   '77',
+  //   '78',
+  //   '79',
+  //   '80',
+  //   '81',
+  //   '82',
+  //   '83',
+  //   '84',
+  //   '85',
+  //   '86',
+  //   '87',
+  //   '88',
+  //   '89',
+  //   '90',
+  //   '91',
+  //   '92',
+  //   '93',
+  //   '94',
+  //   '95',
+  //   '96',
+  //   '97',
+  //   '98',
+  //   '99',
+  //   '100',
+  // ];
 
   static String mSelectedTankType = Constants.TANK_TYPE_SIMPLE;
   bool mVisibilityHWL = false;
@@ -1088,6 +1088,12 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                               // Stream Notification Data from cloud
                               this.notification.notifyEmail =
                                   notificationStream.notifyEmail;
+
+                              this.notification.notifyTOFDistanceHigher =
+                                  notificationStream.notifyTOFDistanceHigher;
+                              this.notification.notifyTOFDistanceLower =
+                                  notificationStream.notifyTOFDistanceLower;
+
                               this.notification.notifyTempHigher =
                                   notificationStream.notifyTempHigher;
                               this.notification.notifyTempLower =
@@ -1121,6 +1127,13 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                             print(
                                 'this.notification.notifyHumidLower=${this
                                     .notification.notifyHumidLower}');
+
+                            print(
+                                'this.notification.notifyTOFDistanceHigher=${this
+                                    .notification.notifyTOFDistanceHigher}');
+                            print(
+                                'this.notification.notifyTOFDistanceLower=${this
+                                    .notification.notifyTOFDistanceLower}');
                           }
 
 
@@ -1322,6 +1335,11 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                                                 deviceReturn.notifyHumidHigher;
                                             this.notification.notifyEmail =
                                                 deviceReturn.notifyEmail;
+
+                                            this.notification.notifyTOFDistanceLower =
+                                                deviceReturn.notifyTOFDistanceLower;
+                                            this.notification.notifyTOFDistanceHigher =
+                                                deviceReturn.notifyTOFDistanceHigher;
                                             // this.notification.isSendNotify = deviceReturn.isSendNotify;
                                           });
                                         },
@@ -1623,31 +1641,31 @@ class _ShowDevicePageState extends State<ShowDevicePage>
             ),
           ),
         ),
-        Center(
-          child: Container(
-            // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
-            // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'battery voltage ',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
-                ),
-                Text(
-                  '${weatherHistory?.weatherData?.readVoltage ?? 'no data'}',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-                Text(
-                  ' volts',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
-                ),
-              ],
-            ),
-          ),
-        ),
+        // Center(
+        //   child: Container(
+        //     // child: Text('battery voltage ${weatherHistory?.weatherData?.readVoltage.toStringAsFixed(weatherHistory?.weatherData?.readVoltage.truncateToDouble() == weatherHistory?.weatherData?.readVoltage ? 0 : 2) ?? 'no data'} volts'),
+        //     // child: Text('battery voltage ${globals.formatNumber(weatherHistory?.weatherData?.readVoltage) ?? 'no data'} volts'),
+        //     child: Row(
+        //       mainAxisSize: MainAxisSize.min,
+        //       mainAxisAlignment: MainAxisAlignment.end,
+        //       crossAxisAlignment: CrossAxisAlignment.center,
+        //       children: [
+        //         Text(
+        //           'battery voltage ',
+        //           style: TextStyle(fontSize: 14, color: Colors.black45),
+        //         ),
+        //         Text(
+        //           '${weatherHistory?.weatherData?.readVoltage ?? 'no data'}',
+        //           style: TextStyle(fontSize: 14, color: Colors.black87),
+        //         ),
+        //         Text(
+        //           ' volts',
+        //           style: TextStyle(fontSize: 14, color: Colors.black45),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -2402,6 +2420,14 @@ class _ShowDevicePageState extends State<ShowDevicePage>
           'notifyTempHigher': (this.notificationDialog.notifyTempHigher == 0)
               ? this.notification.notifyTempHigher
               : this.notificationDialog.notifyTempHigher,
+
+          'notifyTOFDistanceLower': (this.notificationDialog.notifyTOFDistanceLower == 0)
+              ? this.notification.notifyTOFDistanceLower
+              : this.notificationDialog.notifyTOFDistanceLower,
+          'notifyTOFDistanceHigher': (this.notificationDialog.notifyTOFDistanceHigher == 0)
+              ? this.notification.notifyTOFDistanceHigher
+              : this.notificationDialog.notifyTOFDistanceHigher,
+
           'notifyEmail': this.notificationDialog.notifyEmail,
           'isSendNotify': this.notification.isSendNotify,
         })
@@ -2971,6 +2997,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                   height: 8,
                 ),
                 buildHumidityNotifyDialog(),
+                SizedBox(
+                  height: 8,
+                ),
+                buildTankFilledLevelNotifyDialog(),
 
                 // buildCustomPicker(),
               ],
@@ -3070,19 +3100,19 @@ class _ShowDevicePageState extends State<ShowDevicePage>
               case Constants.TEMP_LOWER:
                 {
                   this.notificationDialog.notifyTempLower =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
               case Constants.TEMP_HIGHER:
                 {
                   this.notificationDialog.notifyTempHigher =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
               default:
                 {
                   this.notificationDialog.notifyTempLower =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
             }
@@ -3091,7 +3121,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
             background: Colors.orangeAccent.withOpacity(0.10),
           ),
 
-          children: Utils.modelBuilder<String>(pickerValues, (index, value) {
+          children: Utils.modelBuilder<String>(Constants.pickerHTValues, (index, value) {
             // final color = isSelected ? Colors.pink : Colors.black45;
             // final isSelected = this.selectedIndex == index;
             // final color = isSelected ? Colors.pink : Colors.black;
@@ -3125,19 +3155,19 @@ class _ShowDevicePageState extends State<ShowDevicePage>
               case Constants.HUMID_LOWER:
                 {
                   this.notificationDialog.notifyHumidLower =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
               case Constants.HUMID_HIGHER:
                 {
                   this.notificationDialog.notifyHumidHigher =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
               default:
                 {
                   this.notificationDialog.notifyHumidHigher =
-                      double.parse(pickerValues[index].toString());
+                      double.parse(Constants.pickerHTValues[index].toString());
                   break;
                 }
             }
@@ -3153,7 +3183,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
             background: Colors.lightBlue.withOpacity(0.10),
           ),
 
-          children: Utils.modelBuilder<String>(pickerValues, (index, value) {
+          children: Utils.modelBuilder<String>(Constants.pickerHTValues, (index, value) {
             // final color = isSelected ? Colors.pink : Colors.black45;
             // final isSelected = this.selectedIndex == index;
             // final color = isSelected ? Colors.pink : Colors.black;
@@ -3167,6 +3197,68 @@ class _ShowDevicePageState extends State<ShowDevicePage>
           }),
         ),
       );
+
+  Widget buildTankFilledLevelNumberPicker(int pickerType) => SizedBox(
+    height: 80,
+    width: 50,
+    child: CupertinoPicker(
+      // backgroundColor: Colors.limeAccent,
+      itemExtent: 48,
+      diameterRatio: 1.5,
+      looping: true,
+      useMagnifier: true,
+      magnification: 1.2,
+      scrollController: FixedExtentScrollController(
+          initialItem: initScrollIndex(pickerType)),
+      // onSelectedItemChanged: (index) => setState(() => this.index = index),
+      // onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+      onSelectedItemChanged: (index) => setState(() {
+        switch (pickerType) {
+          case Constants.TANK_FILLED_LEVEL_LOWER:
+            {
+              this.notificationDialog.notifyTOFDistanceLower =
+                  double.parse(Constants.pickerWaterLevelValues[index].toString());
+              break;
+            }
+          case Constants.TANK_FILLED_LEVEL_HIGHER:
+            {
+              this.notificationDialog.notifyTOFDistanceHigher =
+                  double.parse(Constants.pickerWaterLevelValues[index].toString());
+              break;
+            }
+          default:
+            {
+              this.notificationDialog.notifyHumidHigher =
+                  double.parse(Constants.pickerWaterLevelValues[index].toString());
+              break;
+            }
+        }
+      }),
+      // onSelectedItemChanged: (int index) => setState(() {
+      //   this.selectedIndex = index;
+      //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+      //   isSelected = this.selectedIndex == index;
+      //   print('isSelected=${isSelected}');
+      //
+      // }),
+      selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+        background: Colors.deepPurpleAccent.withOpacity(0.10),
+      ),
+
+      children: Utils.modelBuilder<String>(Constants.pickerWaterLevelValues, (index, value) {
+        // final color = isSelected ? Colors.pink : Colors.black45;
+        // final isSelected = this.selectedIndex == index;
+        // final color = isSelected ? Colors.pink : Colors.black;
+        return Center(
+          child: Text(
+            value,
+            style: TextStyle(color: Colors.purple, fontSize: 16),
+            // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+          ),
+        );
+      }),
+    ),
+  );
 
   Widget buildTemperatureNotifyDialog() => SizedBox(
         height: 100,
@@ -3203,7 +3295,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
               children: [
                 Text(
                   'Temperature',
-                  style: TextStyle(color: Colors.black45),
+                  style: TextStyle(color: Colors.deepOrangeAccent, fontSize: 16),
                 ),
                 SizedBox(
                   width: 25,
@@ -3292,7 +3384,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
               children: [
                 Text(
                   'Humidity',
-                  style: TextStyle(color: Colors.black45),
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
                 ),
                 SizedBox(
                   width: 10,
@@ -3346,6 +3438,95 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         // ),
       );
 
+  Widget buildTankFilledLevelNotifyDialog() => SizedBox(
+    height: 100,
+    child: Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 50,
+            ),
+            Text(
+              'Lower than',
+              style: TextStyle(color: Colors.black45),
+            ),
+            SizedBox(
+              width: 20,
+            ),
+            Text(
+              'Higher than',
+              style: TextStyle(color: Colors.black45),
+            ),
+            SizedBox(
+              width: 4,
+            ),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Tank Filled Level',
+              style: TextStyle(color: Colors.purple, fontSize: 16),
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            buildTankFilledLevelNumberPicker(Constants.TANK_FILLED_LEVEL_LOWER),
+            Text(
+              'or',
+              style: TextStyle(color: Colors.black45),
+            ),
+            buildTankFilledLevelNumberPicker(Constants.TANK_FILLED_LEVEL_HIGHER),
+          ],
+        ),
+      ],
+    ),
+
+    // child: CupertinoPicker(
+    //   // backgroundColor: Colors.limeAccent,
+    //   itemExtent: 48,
+    //   diameterRatio: 1.5,
+    //   looping: true,
+    //   useMagnifier: true,
+    //   magnification: 1.2,
+    //   // onSelectedItemChanged: (index) => setState(() => this.index = index),
+    //   onSelectedItemChanged: (index) => setState(() => this.selectedIndex = index),
+    //   // onSelectedItemChanged: (int index) => setState(() {
+    //   //   this.selectedIndex = index;
+    //   //   print('onSelectedItemChanged this.index=${this.selectedIndex} | index=${index}');
+    //   //   isSelected = this.selectedIndex == index;
+    //   //   print('isSelected=${isSelected}');
+    //   //
+    //   // }),
+    //   selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+    //     background: Colors.pink.withOpacity(0.10),
+    //   ),
+    //
+    //   children: Utils.modelBuilder<String> (
+    //       pickerValues,
+    //           (index, value) {
+    //         // final color = isSelected ? Colors.pink : Colors.black45;
+    //         // final isSelected = this.selectedIndex == index;
+    //         // final color = isSelected ? Colors.pink : Colors.black;
+    //         return Center(
+    //           child: Text(
+    //             value,
+    //             style: TextStyle(color: Colors.pink, fontSize: 16),
+    //             // style: TextStyle(color: isSelected ? Colors.pink : Colors.black45, fontSize: 24),
+    //           ),
+    //         );
+    //       }
+    //   ),
+    // ),
+  );
+
   int initScrollIndex(int pickerType) {
     int index = 0;
     switch (pickerType) {
@@ -3367,6 +3548,17 @@ class _ShowDevicePageState extends State<ShowDevicePage>
       case Constants.TEMP_HIGHER:
         {
           index = this.notification.notifyTempHigher.toInt();
+          break;
+        }
+
+      case Constants.TANK_FILLED_LEVEL_LOWER:
+        {
+          index = this.notification.notifyTOFDistanceLower.toInt();
+          break;
+        }
+      case Constants.TANK_FILLED_LEVEL_HIGHER:
+        {
+          index = this.notification.notifyTOFDistanceHigher.toInt();
           break;
         }
       default:
@@ -3402,54 +3594,103 @@ class _ShowDevicePageState extends State<ShowDevicePage>
               style: TextStyle(fontSize: 14, color: Colors.black45),
             ),
             // SizedBox(height: 8,),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Temperature is lower than ',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
+            SizedBox(
+              width: displayWidth(context) * 0.9,
+              child: Expanded(
+                child: FittedBox(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Temperature is lower than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${this.notification.notifyTempLower}\u2103',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                      Text(
+                        ' or higher than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${this.notification.notifyTempHigher}\u2103',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  '${this.notification.notifyTempLower}\u2103',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-                Text(
-                  ' or higher than ',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
-                ),
-                Text(
-                  '${this.notification.notifyTempHigher}\u2103',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-              ],
+              ),
             ),
             SizedBox(
               height: 8,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Humidity is lower than ',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
+            SizedBox(
+              width: displayWidth(context) * 0.9,
+              child: Expanded(
+                child: FittedBox(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Humidity is lower than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${f.format(this.notification.notifyHumidLower)}%',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                      Text(
+                        ' or higher than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${f.format(this.notification.notifyHumidHigher)}%',
+
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  '${this.notification.notifyHumidLower}',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ),
+
+            SizedBox(
+              height: 8,
+            ),
+            SizedBox(
+              width: displayWidth(context) * 0.9,
+              child: Expanded(
+                child: FittedBox(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Tank filled level is lower than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${f.format(this.notification.notifyTOFDistanceLower)}cm',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                      Text(
+                        ' or higher than ',
+                        style: TextStyle(fontSize: 14, color: Colors.black45),
+                      ),
+                      Text(
+                        '${f.format(this.notification.notifyTOFDistanceHigher)}cm',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  ' or higher than ',
-                  style: TextStyle(fontSize: 14, color: Colors.black45),
-                ),
-                Text(
-                  '${this.notification.notifyHumidHigher}',
-                  style: TextStyle(fontSize: 14, color: Colors.black87),
-                ),
-              ],
+              ),
             ),
 
             // buildCustomPicker(),
