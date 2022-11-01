@@ -2,14 +2,19 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:iot_theapp/objectbox/user.dart';
 
 import 'package:iot_theapp/pages/home/widget/devices_list.dart';
 import 'package:iot_theapp/pages/network/choose_network.dart';
 
 import 'package:iot_theapp/globals.dart' as globals;
 import 'package:iot_theapp/pages/network/view/choose_territory_scenario_page.dart';
+
+import 'package:iot_theapp/main.dart';
+import 'package:validators/validators.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.app}) : super(key: key);
@@ -26,6 +31,9 @@ class _HomePageState extends State<HomePage> {
   final name = "Name2";
   final databaseReference = FirebaseDatabase.instance.ref();
 
+  int? userId;
+  User? user;
+
   // -------------------------
   int _counter = 0;
   // late DatabaseReference _counterRef;
@@ -37,6 +45,10 @@ class _HomePageState extends State<HomePage> {
   String _kTestKey = 'Hello';
   String _kTestValue = 'world!';
   FirebaseException? _error;
+
+  // Note: This is a `GlobalKey<FormState>`,
+  // not a GlobalKey<MyCustomFormState>.
+  final _userNameFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -75,6 +87,40 @@ class _HomePageState extends State<HomePage> {
     //       final FirebaseException error = o as FirebaseException;
     //       print('Error: ${error.code} ${error.message}');
     //     });
+
+
+
+    if(objectbox.userBox.isEmpty()) {
+      print('**** none user');
+
+      print('**** then add demo one.');
+      user = User();
+      user?.userName = 'demo';
+      user?.password = '';
+      user?.updatedWhen = '2022-10-18 15:50:43';
+      final id = objectbox.userBox.put(user!);
+      userId = id;
+
+      print('new demo user got id=${id}, which is the same as note.id=${user!.id} | userId=${userId}');
+      print('re-read user: ${objectbox.userBox.get(userId!)}');
+
+
+    } else {
+      print('**** user length=${objectbox.userBox.getAll().length}');
+
+      if(objectbox.userBox.getAll().length > 0) {
+        List<User> userList = objectbox.userBox.getAll();
+        userId = userList[0].id;
+        print('re-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+        user = userList[0];
+
+        // Test re-write user objectbox
+        // user!.userName = 'cray';
+        // objectbox.userBox.put(user!);
+        // print('renew-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+      }
+    }
+
   }
 
   @override
@@ -84,7 +130,14 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Iot Home Page - v.${globals.g_version}.${globals.g_buildNumber}'),
+        title: GestureDetector(
+            onTap: () async {
+              final title =
+                  await openUserInputDialog();
+              if (title == null) return;
+            },
+            child: Text('${user!.userName}\'s Iot - v.${globals.g_version}.${globals.g_buildNumber}')
+        ),
         backgroundColor: Colors.cyan[400],
       ),
       body: Column(
@@ -135,6 +188,144 @@ class _HomePageState extends State<HomePage> {
       // ),
     );
   }
+
+  Future<String?>  openUserInputDialog() =>
+      showDialog<String>(
+        context: context,
+        builder: (context) =>
+            AlertDialog(
+              insetPadding: EdgeInsets.only(
+                top: 2.0,
+                left: 4.0,
+                right: 4.0,
+              ),
+              title: Container(
+                  alignment: Alignment.topCenter, child: Text('User')
+              ),
+              // content: buildOperationUnitList(),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Form(
+                    key: _userNameFormKey,
+                    child: TextFormField(
+                      initialValue: user!.userName,
+                      keyboardType: TextInputType.name,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter some text for user name.';
+                        } else {
+                          if (!isAlphanumeric(value!)) {
+                            return 'Invalid user name format!!';
+                          }
+                          setState(() {
+                            // this.notificationDialog.notifyEmail = value;
+                            user!.userName = value;
+                          });
+
+                          return null;
+                        }
+                      },
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        label: Text(
+                          'User name:',
+                          style: TextStyle(fontSize: 16, color: Colors.black45),
+                        ),
+                        // labelText: Text('Email:'),
+                        hintText: 'Enter your user name who own the system.',
+                      ),
+                      // controller: name_controller,
+                      // onChanged: (value) {
+                      //   setState(() {
+                      //     this.device.notifyEmail = value;
+                      //   });
+                      // },
+                      // onSubmitted: (_) => submitNotificationSettings(),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                ],
+              ),
+
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('CLOSE')),
+                TextButton(
+                  // onPressed: submitNotificationSettings,
+                    onPressed: () {
+                      // Validate returns true if the form is valid, or false otherwise.
+                      if (_userNameFormKey.currentState!.validate()) {
+                        objectbox.userBox.put(user!);
+                        print('renew-read user[${userId}]: ${objectbox.userBox.get(userId!)} is success!!');
+
+                        showDialog(
+                            context: context,
+                            builder: (_) => CupertinoAlertDialog(
+                              title: Text("Update Successfully"),
+                              content:
+                              Text("Update owner user name settings is successfully."),
+                              actions: [
+                                CupertinoDialogAction(
+                                  child: Text("OK"),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.of(context).pop();
+
+                                    Navigator.pushNamedAndRemoveUntil(context, '/', (Route<dynamic> route) => false);
+                                  },
+                                ),
+                              ],
+                            ),
+                            barrierDismissible: false);
+                      } else {
+                        showDialog(
+                            context: context,
+                            builder: (_) =>
+                                CupertinoAlertDialog(
+                                  title: Text("The user name who own the system not found!"),
+                                  content: Text(
+                                      "Please enter the user name. ie. john.\ And try again."),
+                                  actions: [
+                                    CupertinoDialogAction(
+                                      child: Text("OK"),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                            barrierDismissible: false);
+                      }
+
+                      // List<OperationUnit> batchUpdatedLists = [];
+                      //
+                      // batchUpdatedLists = Provider.of<TempOperationUnitList>(context, listen: false).tempOperationUnitLists;
+
+                      // Validate returns true if the form is valid, or false otherwise.
+                      // print('tempOperationUnitLists.length=${context.read<_OperationUnitListWidgetState>().tempOperationUnitLists.length}');
+                      // if (batchUpdatedLists.length > 0) {
+                        // If the form is valid, display a snackbar. In the real world,
+                        // you'd often call a server or save the information in a database.
+                        // updateSensorParing(batchUpdatedLists);
+
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(content: Text('Updated Data')),
+                        // );
+
+
+                    },
+                    child: Text('SUBMIT')),
+              ],
+            ),
+      );
 
   @override
   void dispose() {

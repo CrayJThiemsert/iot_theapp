@@ -6,6 +6,8 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:iot_theapp/main.dart';
+import 'package:iot_theapp/objectbox/user.dart';
 import 'package:iot_theapp/pages/network/entity/scenario_entity.dart';
 
 import 'package:iot_theapp/utils/constants.dart';
@@ -42,6 +44,9 @@ class ChooseDevicePage extends StatefulWidget {
 }
 
 class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMixin<ChooseDevicePage> {
+  int? userId;
+  User? user;
+
   String _wifiName = 'click button to get wifi ssid.';
   int level = 0;
   String _ip = 'click button to get ip.';
@@ -56,6 +61,38 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
   @override
   void initState() {
     super.initState();
+
+    if(objectbox.userBox.isEmpty()) {
+      print('**** none user');
+
+      print('**** then add demo one.');
+      user = User();
+      user?.userName = 'demo';
+      user?.password = '';
+      user?.updatedWhen = '2022-10-18 15:50:43';
+      final id = objectbox.userBox.put(user!);
+      userId = id;
+
+      print('new demo user got id=${id}, which is the same as note.id=${user!.id} | userId=${userId}');
+      print('re-read user: ${objectbox.userBox.get(userId!)}');
+
+
+    } else {
+      print('**** user length=${objectbox.userBox.getAll().length}');
+
+      if(objectbox.userBox.getAll().length > 0) {
+        List<User> userList = objectbox.userBox.getAll();
+        userId = userList[0].id;
+        print('re-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+        user = userList[0];
+
+        // Test re-write user objectbox
+        // user!.userName = 'cray';
+        // objectbox.userBox.put(user!);
+        // print('renew-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+      }
+    }
+
     // wifiConfiguration = WifiConfiguration();
     print('ChooseDevicePage<-');
 
@@ -343,7 +380,7 @@ class _ChooseDevicePageState extends State<ChooseDevicePage> with AfterLayoutMix
     String mode = "setup";
     var url =
     // Uri.https('www.googleapis.com', '/books/v1/volumes', {'q': '{http}'});
-    Uri.http(Constants.of(context)!.DEFAULT_THE_NODE_IP, '/setting', {'ssid': globals.g_internet_ssid, 'pass': globals.g_internet_password, 'mode': mode, 'name': globals.g_device_name});
+    Uri.http(Constants.of(context)!.DEFAULT_THE_NODE_IP, '/setting', {'ssid': globals.g_internet_ssid, 'pass': globals.g_internet_password, 'mode': mode, 'name': globals.g_device_name, 'useruid': user!.userName});
 
     // Await the http get response, then decode the json-formatted response.
     final response = await http.get(url);

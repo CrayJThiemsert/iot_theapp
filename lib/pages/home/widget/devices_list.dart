@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:iot_theapp/globals.dart' as globals;
+import 'package:iot_theapp/main.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/utils/constants.dart';
 
@@ -12,24 +13,71 @@ import 'package:iot_theapp/utils/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:iot_theapp/utils/sizes_helpers.dart';
 
+import '../../../objectbox/user.dart';
+
 class DevicesList extends StatefulWidget {
   @override
   _DevicesListState createState() => _DevicesListState();
 }
 
 class _DevicesListState extends State<DevicesList> {
-  // final dbRef = FirebaseDatabase.instance.reference().child("users/cray/devices");
-  final dbRef = FirebaseDatabase.instance.ref().child("users/cray/devices");
+
+  int? userId;
+  User? user;
+
+
   // List<Map<dynamic, String>> lists = [];
   List<String> lists = [];
   List<Device> deviceLists = [];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    if(objectbox.userBox.isEmpty()) {
+      print('**** none user');
+
+      print('**** then add demo one.');
+      user = User();
+      user?.userName = 'demo';
+      user?.password = '';
+      user?.updatedWhen = '2022-10-18 15:50:43';
+      final id = objectbox.userBox.put(user!);
+      userId = id;
+
+      print('new demo user got id=${id}, which is the same as note.id=${user!.id} | userId=${userId}');
+      print('re-read user: ${objectbox.userBox.get(userId!)}');
+
+
+    } else {
+      print('**** user length=${objectbox.userBox.getAll().length}');
+
+      if(objectbox.userBox.getAll().length > 0) {
+        List<User> userList = objectbox.userBox.getAll();
+        userId = userList[0].id;
+        print('re-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+        user = userList[0];
+
+        // Test re-write user objectbox
+        // user!.userName = 'cray';
+        // objectbox.userBox.put(user!);
+        // print('renew-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+      }
+    }
+
+
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final dbRef = FirebaseDatabase.instance.ref().child("users/${user!.userName}/devices");
+
     return StreamBuilder(
           stream: dbRef.onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.hasData && snapshot.data!.snapshot.exists && !snapshot.hasError) {
+            // if (snapshot.hasData) {
 
               lists.clear();
               deviceLists.clear();
@@ -95,6 +143,19 @@ class _DevicesListState extends State<DevicesList> {
                       child: DeviceCard(device: deviceLists[index]),
                     );
                   },),
+              );
+            } else {
+              return Column(
+                // mainAxisSize: MainAxisSize.min,
+                // mainAxisAlignment: MainAxisAlignment.center,
+                // crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 16,
+                  ),
+                  Text('Device data not found under user \"${user!.userName}\".'),
+                  Text('Please add a new device or change the user name.'),
+                ],
               );
             }
             return CircularProgressIndicator();

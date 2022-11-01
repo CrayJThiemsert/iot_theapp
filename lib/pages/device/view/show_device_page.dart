@@ -1,29 +1,37 @@
 import 'dart:math';
 
 import 'package:after_layout/after_layout.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bounce/flutter_bounce.dart';
 import 'package:intl/intl.dart';
+import 'package:iot_theapp/main.dart';
+import 'package:iot_theapp/objectbox/user.dart';
 import 'package:iot_theapp/pages/device/database/device_database.dart';
 import 'package:iot_theapp/pages/device/model/device.dart';
 import 'package:iot_theapp/pages/device/model/notification.dart' as Notify;
+import 'package:iot_theapp/pages/device/model/operation_unit.dart';
 import 'package:iot_theapp/pages/device/model/tank.dart';
 import 'package:iot_theapp/pages/device/model/weather_history.dart';
 import 'package:iot_theapp/pages/device/view/line_chart_live.dart';
+import 'package:iot_theapp/pages/device/view/temp_operation_unit_list.dart';
 import 'package:iot_theapp/pages/device/view/utils.dart';
-import 'package:iot_theapp/pages/user/model/user.dart';
+// import 'package:iot_theapp/pages/user/model/user.dart';
 import 'package:iot_theapp/utils/constants.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:iot_theapp/globals.dart' as globals;
 import 'package:iot_theapp/utils/sizes_helpers.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:provider/provider.dart';
 
 import 'package:validators/validators.dart';
 
 import '../../../line_chart_sample10.dart';
+import 'data.dart';
 import 'indicator.dart';
 
 class ShowDevicePage extends StatefulWidget {
@@ -44,6 +52,7 @@ class ShowDevicePage extends StatefulWidget {
 
 class _ShowDevicePageState extends State<ShowDevicePage>
     with AfterLayoutMixin<ShowDevicePage> {
+
   String deviceUid = '';
   Device device = Device();
   Notify.Notification notification = Notify.Notification();
@@ -59,7 +68,9 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   static final _diameterFormKey = GlobalKey<FormState>();
   static final _sideLengthFormKey = GlobalKey<FormState>();
 
-  User user = const User(uid: 'cray');
+  // User user = const User(uid: 'cray');
+  int? userId;
+  User? user;
   // late DeviceDatabase deviceDatabase;
 
   bool sec10Pressed = false;
@@ -218,6 +229,13 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   bool mVisibilityLD = false;
   double mPercentage = -1;
 
+  List<OperationUnit> operationUnitLists = [];
+  // List<OperationUnit> tempOperationUnitLists = [];
+  // Map<int, bool> selectedOperationUnitFlag = {};
+  // bool isSelectionOperationUnitMode = false;
+
+  // int selectedIndex = 0;
+
   // int selectedIndex = 0;
 
   // bool _checked = false;
@@ -367,6 +385,37 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     // deviceDatabase.initState();
 
     name_controller = TextEditingController();
+
+    if(objectbox.userBox.isEmpty()) {
+      print('**** none user');
+
+      print('**** then add demo one.');
+      user = User();
+      user?.userName = 'demo';
+      user?.password = '';
+      user?.updatedWhen = '2022-10-18 15:50:43';
+      final id = objectbox.userBox.put(user!);
+      userId = id;
+
+      print('new demo user got id=${id}, which is the same as note.id=${user!.id} | userId=${userId}');
+      print('re-read user: ${objectbox.userBox.get(userId!)}');
+
+
+    } else {
+      print('**** user length=${objectbox.userBox.getAll().length}');
+
+      if(objectbox.userBox.getAll().length > 0) {
+        List<User> userList = objectbox.userBox.getAll();
+        userId = userList[0].id;
+        print('re-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+        user = userList[0];
+
+        // Test re-write user objectbox
+        // user!.userName = 'cray';
+        // objectbox.userBox.put(user!);
+        // print('renew-read user[${userId}]: ${objectbox.userBox.get(userId!)}');
+      }
+    }
   }
 
   @override
@@ -971,18 +1020,20 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   Widget build(BuildContext context) {
     var deviceHistoryRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
+        .child('users/${user!.userName}/devices/${device.uid}/${device.uid}_history')
         .orderByKey()
         .limitToLast(1);
     var deviceNotificationRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/notification')
+        .child('users/${user!.userName}/devices/${device.uid}/notification')
         .orderByKey();
 
     var deviceTankRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/tank')
+        .child('users/${user!.userName}/devices/${device.uid}/tank')
         .orderByKey();
+
+
     // var deviceRef = FirebaseDatabase.instance.reference().child('users/${user.uid}/devices/${device.uid}/${device.uid}_history/2021-03-31 01:32:01');
     final TextStyle? unitStyle = Theme.of(context).textTheme.headline2;
     final TextStyle? headlineStyle = Theme.of(context).textTheme.headline1;
@@ -991,7 +1042,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         // stream: deviceDatabase.getLatestHistory().onValue,
         stream: deviceHistoryRef.onValue,
         builder: (context, AsyncSnapshot<DatabaseEvent> snapHistory) {
-          if (snapHistory.hasData && !snapHistory.hasError) {
+          if (snapHistory.hasData && snapHistory.data!.snapshot.exists && !snapHistory.hasError) {
             print('=>${snapHistory.data!.snapshot.value.toString()}');
             var weatherHistory = WeatherHistory.fromJson(
                 snapHistory.data!.snapshot.value as Map);
@@ -1023,7 +1074,7 @@ class _ShowDevicePageState extends State<ShowDevicePage>
             return StreamBuilder(
                 stream: deviceTankRef.onValue,
                 builder: (context, AsyncSnapshot<DatabaseEvent> snapTank) {
-                  if (snapTank.hasData && !snapTank.hasError) {
+                  if (snapTank.hasData && snapTank.data!.snapshot.exists && !snapTank.hasError) {
                     print('snapTank.hasData=${snapTank.hasData}');
                     print('=>${snapTank.data!.snapshot.value.toString()}');
                     if (snapTank.data!.snapshot.value != null) {
@@ -1065,314 +1116,357 @@ class _ShowDevicePageState extends State<ShowDevicePage>
                     print('_ShowDevicePageState.tankDialog.wCapacity=${tankDialog.wCapacity}');
                   }
 
-                    return StreamBuilder(
-                        stream: deviceNotificationRef.onValue,
-                        builder:
-                            (context,
-                            AsyncSnapshot<DatabaseEvent> snapNotification) {
-                          if (snapNotification.hasData &&
-                              !snapNotification.hasError) {
+                  return StreamBuilder(
+                      stream: deviceNotificationRef.onValue,
+                      builder:
+                          (context,
+                          AsyncSnapshot<DatabaseEvent> snapNotification) {
+                        if (snapNotification.hasData &&
+                            snapNotification.data!.snapshot.exists &&
+                            !snapNotification.hasError) {
+                          print(
+                              'snapNotification.hasData=${snapNotification
+                                  .hasData}');
+                          print(
+                              '=>${snapNotification.data!.snapshot.value
+                                  .toString()}');
+                          if (snapNotification.data!.snapshot.value != null) {
                             print(
-                                'snapNotification.hasData=${snapNotification
-                                    .hasData}');
-                            print(
-                                '=>${snapNotification.data!.snapshot.value
-                                    .toString()}');
-                            if (snapNotification.data!.snapshot.value != null) {
-                              print(
-                                  'snapNotification.data!.snapshot.value is not null!!');
-                              var notificationStream = Notify.Notification
-                                  .fromJson(
-                                  snapNotification.data!.snapshot.value as Map);
+                                'snapNotification.data!.snapshot.value is not null!!');
+                            var notificationStream = Notify.Notification
+                                .fromJson(
+                                snapNotification.data!.snapshot.value as Map);
 
-                              // Stream Notification Data from cloud
-                              this.notification.notifyEmail =
-                                  notificationStream.notifyEmail;
+                            // Stream Notification Data from cloud
+                            this.notification.notifyEmail =
+                                notificationStream.notifyEmail;
 
-                              this.notification.notifyTOFDistanceHigher =
-                                  notificationStream.notifyTOFDistanceHigher;
-                              this.notification.notifyTOFDistanceLower =
-                                  notificationStream.notifyTOFDistanceLower;
+                            this.notification.notifyTOFDistanceHigher =
+                                notificationStream.notifyTOFDistanceHigher;
+                            this.notification.notifyTOFDistanceLower =
+                                notificationStream.notifyTOFDistanceLower;
 
-                              this.notification.notifyTempHigher =
-                                  notificationStream.notifyTempHigher;
-                              this.notification.notifyTempLower =
-                                  notificationStream.notifyTempLower;
-                              this.notification.notifyHumidHigher =
-                                  notificationStream.notifyHumidHigher;
-                              this.notification.notifyHumidLower =
-                                  notificationStream.notifyHumidLower;
-                              this.notification.isSendNotify =
-                                  notificationStream.isSendNotify;
-                            } else {
-                              print(
-                                  'snapNotification.data!.snapshot.value is null!!');
-                            }
-
+                            this.notification.notifyTempHigher =
+                                notificationStream.notifyTempHigher;
+                            this.notification.notifyTempLower =
+                                notificationStream.notifyTempLower;
+                            this.notification.notifyHumidHigher =
+                                notificationStream.notifyHumidHigher;
+                            this.notification.notifyHumidLower =
+                                notificationStream.notifyHumidLower;
+                            this.notification.isSendNotify =
+                                notificationStream.isSendNotify;
+                          } else {
                             print(
-                                'this.notification.isSendNotify=${this
-                                    .notification.isSendNotify}');
-                            print(
-                                'this.notification.notifyEmail=${this
-                                    .notification.notifyEmail}');
-                            print(
-                                'this.notification.notifyTempHigher=${this
-                                    .notification.notifyTempHigher}');
-                            print(
-                                'this.notification.notifyTempLower=${this
-                                    .notification.notifyTempLower}');
-                            print(
-                                'this.notification.notifyHumidHigher=${this
-                                    .notification.notifyHumidHigher}');
-                            print(
-                                'this.notification.notifyHumidLower=${this
-                                    .notification.notifyHumidLower}');
-
-                            print(
-                                'this.notification.notifyTOFDistanceHigher=${this
-                                    .notification.notifyTOFDistanceHigher}');
-                            print(
-                                'this.notification.notifyTOFDistanceLower=${this
-                                    .notification.notifyTOFDistanceLower}');
+                                'snapNotification.data!.snapshot.value is null!!');
                           }
 
+                          print(
+                              'this.notification.isSendNotify=${this
+                                  .notification.isSendNotify}');
+                          print(
+                              'this.notification.notifyEmail=${this
+                                  .notification.notifyEmail}');
+                          print(
+                              'this.notification.notifyTempHigher=${this
+                                  .notification.notifyTempHigher}');
+                          print(
+                              'this.notification.notifyTempLower=${this
+                                  .notification.notifyTempLower}');
+                          print(
+                              'this.notification.notifyHumidHigher=${this
+                                  .notification.notifyHumidHigher}');
+                          print(
+                              'this.notification.notifyHumidLower=${this
+                                  .notification.notifyHumidLower}');
 
-                          mPercentage = calculateFilledPercentage(mSelectedTankType, weatherHistory);
+                          print(
+                              'this.notification.notifyTOFDistanceHigher=${this
+                                  .notification.notifyTOFDistanceHigher}');
+                          print(
+                              'this.notification.notifyTOFDistanceLower=${this
+                                  .notification.notifyTOFDistanceLower}');
+                        }
 
-                          return Scaffold(
-                            appBar: AppBar(
-                              title: Text(
-                                  '${device.name ?? device.uid} Detail'),
-                            ),
-                            body: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    height: 12,
-                                  ),
-                                  // TempAndHumidCircularWidget(weatherHistory: weatherHistory, headlineStyle: headlineStyle, unitStyle: unitStyle),
-                                  SizedBox(
-                                    height: 12,
-                                  ),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      final deviceReturn =
-                                      await openTankConfigurationDialog();
-                                      if (deviceReturn == null) return;
+                        mPercentage = calculateFilledPercentage(mSelectedTankType, weatherHistory);
 
-                                      setState(() {
-                                        this.tankDialog.wHeight =
-                                            deviceReturn.wHeight;
-                                        this.tankDialog.wWidth =
-                                            deviceReturn.wWidth;
-                                        this.tankDialog.wDiameter =
-                                            deviceReturn.wDiameter;
-                                        this.tankDialog.wSideLength =
-                                            deviceReturn.wSideLength;
-                                        this.tankDialog.wLength =
-                                            deviceReturn.wLength;
-                                        // this.notification.isSendNotify = deviceReturn.isSendNotify;
-                                      });
-                                    },
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment
-                                          .center,
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .center,
-                                      // mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Container(child: Text('${globals.formatNumber(mPercentage)}% Full')),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .center,
-                                          children: [
-                                            Container(
-                                              width: displayWidth(context) *
-                                                  0.3,
-                                              child: Image(
-                                                image: AssetImage(
-                                                    // 'images/tanks/base_vertical_cylinder.jpg'),
-                                                    // Constants.gTankImagesMap[mSelectedTankType]!),
-                                                    getFilledTankPercentageImage(mSelectedTankType)),
-                                              ),
-                                            ),
-                                            Container(
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize
-                                                      .min,
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                                  crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize: MainAxisSize
-                                                          .min,
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                      children: [
-                                                        Container(
-                                                            child: Text(
-                                                                'Tank Volumes:')),
-                                                        Container(
-                                                            child: Text(
-                                                                '${calculateTankVolume(mSelectedTankType)} Liters')),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      mainAxisSize: MainAxisSize
-                                                          .min,
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                      children: [
-                                                        Container(
-                                                            child:
-                                                            Text(
-                                                                'Range Distance:')),
-                                                        Container(child: Text(
-                                                            '${globals.formatNumber(weatherHistory.weatherData.wRangeDistance / 10)}cm')),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      mainAxisSize: MainAxisSize
-                                                          .min,
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                      crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                      children: [
-                                                        Container(
-                                                            child:
-                                                            Text(
-                                                                'Filled Depth(f):')),
-                                                        Container(child: Text(
-                                                            '${calculateFilledDepth(mSelectedTankType, weatherHistory)}cm')),
-                                                      ],
-                                                    ),
-                                                    buildTankTypeDimensionFormDisplayOnly(mSelectedTankType),
-                                                    // buildTankTypeDimensionColumn(
-                                                    //     device.wTankType),
-                                                  ],
-                                                )),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  drawLineChart(),
-                                  buildDeviceDescription(weatherHistory),
-                                  buildReadingIntervalCard(context),
-                                  SizedBox(
-                                    height: 8,
-                                  ),
-                                  // draw line chart
+                        return Scaffold(
+                          appBar: AppBar(
+                            title: Text(
+                                '${device.name ?? device.uid} Detail'),
+                          ),
+                          body: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: 12,
+                                ),
+                                // TempAndHumidCircularWidget(weatherHistory: weatherHistory, headlineStyle: headlineStyle, unitStyle: unitStyle),
+                                SizedBox(
+                                  height: 12,
+                                ),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final deviceReturn =
+                                    await openTankConfigurationDialog();
+                                    if (deviceReturn == null) return;
 
-                                  // Notification setting
-                                  Column(
+                                    setState(() {
+                                      this.tankDialog.wHeight =
+                                          deviceReturn.wHeight;
+                                      this.tankDialog.wWidth =
+                                          deviceReturn.wWidth;
+                                      this.tankDialog.wDiameter =
+                                          deviceReturn.wDiameter;
+                                      this.tankDialog.wSideLength =
+                                          deviceReturn.wSideLength;
+                                      this.tankDialog.wLength =
+                                          deviceReturn.wLength;
+                                      // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                    });
+                                  },
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .center,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .center,
+                                    // mainAxisSize: MainAxisSize.max,
                                     children: [
-                                      SizedBox(
-                                        height: 8,
-                                      ),
-                                      TextButton(
-                                        child: Text('Notification'),
-                                        style: TextButton.styleFrom(
-                                          primary: Colors.black54,
-                                          backgroundColor: Colors.white70,
-                                          onSurface: Colors.grey,
-                                          textStyle: TextStyle(
-                                            color: Colors.black54,
-                                            fontSize: 16,
-                                            fontStyle: FontStyle.normal,
-                                            fontWeight: FontWeight.w600,
+                                      Container(child: Text('${globals.formatNumber(mPercentage)}% Full')),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .center,
+                                        children: [
+                                          Container(
+                                            width: displayWidth(context) *
+                                                0.3,
+                                            child: Image(
+                                              image: AssetImage(
+                                                  // 'images/tanks/base_vertical_cylinder.jpg'),
+                                                  // Constants.gTankImagesMap[mSelectedTankType]!),
+                                                  getFilledTankPercentageImage(mSelectedTankType)),
+                                            ),
                                           ),
-                                          shadowColor: Colors.limeAccent,
-                                          elevation: 5,
-                                        ),
-
-                                        // style: ButtonStyle(
-                                        //   foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                                        //           (Set<MaterialState> states) {
-                                        //         if (states.contains(MaterialState.disabled))
-                                        //           return Colors.black54;
-                                        //         return null; // Defer to the widget's default.
-                                        //       }),
-                                        //   overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                                        //           (Set<MaterialState> states) {
-                                        //         if (states.contains(MaterialState.focused))
-                                        //           return Colors.red;
-                                        //         if (states.contains(MaterialState.hovered))
-                                        //           return Colors.green;
-                                        //         if (states.contains(MaterialState.pressed))
-                                        //           return Colors.black54;
-                                        //         return null; // Defer to the widget's default.
-                                        //       }),
-                                        // ),
-                                        onPressed: () async {
-
-                                          final deviceReturn =
-                                          await openNotificationInputDialog();
-                                          if (deviceReturn == null) return;
-
-                                          setState(() {
-                                            this.notification.notifyTempLower =
-                                                deviceReturn.notifyTempLower;
-                                            this.notification.notifyTempHigher =
-                                                deviceReturn.notifyTempHigher;
-                                            this.notification.notifyHumidLower =
-                                                deviceReturn.notifyHumidLower;
-                                            this.notification
-                                                .notifyHumidHigher =
-                                                deviceReturn.notifyHumidHigher;
-                                            this.notification.notifyEmail =
-                                                deviceReturn.notifyEmail;
-
-                                            this.notification.notifyTOFDistanceLower =
-                                                deviceReturn.notifyTOFDistanceLower;
-                                            this.notification.notifyTOFDistanceHigher =
-                                                deviceReturn.notifyTOFDistanceHigher;
-                                            // this.notification.isSendNotify = deviceReturn.isSendNotify;
-                                          });
-                                        },
+                                          Container(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize
+                                                    .min,
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                                children: [
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize
+                                                        .min,
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                    children: [
+                                                      Container(
+                                                          child: Text(
+                                                              'Tank Volumes:')),
+                                                      Container(
+                                                          child: Text(
+                                                              '${calculateTankVolume(mSelectedTankType)} Liters')),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize
+                                                        .min,
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                    children: [
+                                                      Container(
+                                                          child:
+                                                          Text(
+                                                              'Range Distance:')),
+                                                      Container(child: Text(
+                                                          '${globals.formatNumber(weatherHistory.weatherData.wRangeDistance / 10)}cm')),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize: MainAxisSize
+                                                        .min,
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                    children: [
+                                                      Container(
+                                                          child:
+                                                          Text(
+                                                              'Filled Depth(f):')),
+                                                      Container(child: Text(
+                                                          '${calculateFilledDepth(mSelectedTankType, weatherHistory)}cm')),
+                                                    ],
+                                                  ),
+                                                  buildTankTypeDimensionFormDisplayOnly(mSelectedTankType),
+                                                  // buildTankTypeDimensionColumn(
+                                                  //     device.wTankType),
+                                                ],
+                                              )),
+                                        ],
                                       ),
-                                      SizedBox(
-                                        height: 8,
-                                      ),
-                                      // Notification display
-                                      drawNotificationDetail(),
                                     ],
                                   ),
+                                ),
+                                // Operation Unit
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 8,
+                                    ),
+                                    TextButton(
+                                      child: Text('Operation Unit'),
+                                      style: TextButton.styleFrom(
+                                        primary: Colors.black54,
+                                        backgroundColor: Colors.white70,
+                                        onSurface: Colors.grey,
+                                        textStyle: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 16,
+                                          fontStyle: FontStyle.normal,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        shadowColor: Colors.limeAccent,
+                                        elevation: 5,
+                                      ),
 
-                                  SizedBox(
-                                    height: 16,
-                                  ),
-                                  // Row(
-                                  //   children: [
-                                  //     Expanded(
-                                  //         child: Text(
-                                  //           'Name: ',
-                                  //           style: TextStyle(fontWeight: FontWeight.w600),
-                                  //         ),
-                                  //     ),
-                                  //     const SizedBox(width: 12,),
-                                  //     Text(device.notifyEmail),
-                                  //   ],
-                                  // )
-                                ],
-                              ),
+                                      onPressed: () async {
+
+                                        final operationUnitReturn =
+                                        await openOperationUnitInputDialog();
+                                        if (operationUnitReturn == null) return;
+
+                                        // setState(() {
+                                        //   this.notification.notifyTempLower =
+                                        //       operationUnitReturn.notifyTempLower;
+                                        //   this.notification.notifyTempHigher =
+                                        //       operationUnitReturn.notifyTempHigher;
+                                        //   this.notification.notifyHumidLower =
+                                        //       operationUnitReturn.notifyHumidLower;
+                                        //   this.notification
+                                        //       .notifyHumidHigher =
+                                        //       operationUnitReturn.notifyHumidHigher;
+                                        //   this.notification.notifyEmail =
+                                        //       operationUnitReturn.notifyEmail;
+                                        //
+                                        //   this.notification.notifyTOFDistanceLower =
+                                        //       operationUnitReturn.notifyTOFDistanceLower;
+                                        //   this.notification.notifyTOFDistanceHigher =
+                                        //       operationUnitReturn.notifyTOFDistanceHigher;
+                                        //   // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                        // });
+                                      },
+                                    ),
+                                    SizedBox(
+                                      height: 8,
+                                    ),
+                                  ],
+                                ),
+
+                                // Operation Unit detail display
+                                drawOperationUnitDetail(),
+
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                drawLineChart(),
+                                buildDeviceDescription(weatherHistory),
+                                buildReadingIntervalCard(context),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                // draw line chart
+
+                                // Notification setting
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 8,
+                                    ),
+                                    TextButton(
+                                      child: Text('Notification'),
+                                      style: TextButton.styleFrom(
+                                        primary: Colors.black54,
+                                        backgroundColor: Colors.white70,
+                                        onSurface: Colors.grey,
+                                        textStyle: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 16,
+                                          fontStyle: FontStyle.normal,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        shadowColor: Colors.limeAccent,
+                                        elevation: 5,
+                                      ),
+
+                                      onPressed: () async {
+
+                                        final deviceReturn =
+                                        await openNotificationInputDialog();
+                                        if (deviceReturn == null) return;
+
+                                        setState(() {
+                                          this.notification.notifyTempLower =
+                                              deviceReturn.notifyTempLower;
+                                          this.notification.notifyTempHigher =
+                                              deviceReturn.notifyTempHigher;
+                                          this.notification.notifyHumidLower =
+                                              deviceReturn.notifyHumidLower;
+                                          this.notification
+                                              .notifyHumidHigher =
+                                              deviceReturn.notifyHumidHigher;
+                                          this.notification.notifyEmail =
+                                              deviceReturn.notifyEmail;
+
+                                          this.notification.notifyTOFDistanceLower =
+                                              deviceReturn.notifyTOFDistanceLower;
+                                          this.notification.notifyTOFDistanceHigher =
+                                              deviceReturn.notifyTOFDistanceHigher;
+                                          // this.notification.isSendNotify = deviceReturn.isSendNotify;
+                                        });
+                                      },
+                                    ),
+                                    SizedBox(
+                                      height: 8,
+                                    ),
+                                    // Notification display
+                                    drawNotificationDetail(),
+                                  ],
+                                ),
+
+                                SizedBox(
+                                  height: 16,
+                                ),
+                                // Row(
+                                //   children: [
+                                //     Expanded(
+                                //         child: Text(
+                                //           'Name: ',
+                                //           style: TextStyle(fontWeight: FontWeight.w600),
+                                //         ),
+                                //     ),
+                                //     const SizedBox(width: 12,),
+                                //     Text(device.notifyEmail),
+                                //   ],
+                                // )
+                              ],
                             ),
-                          );
-                        });
-                  });
+                          ),
+                        );
+                      });
+                });
           } else {
             return Scaffold(
                 appBar: AppBar(
@@ -2167,10 +2261,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     // update reading interval in cloud database
     // deviceDatabase.updateDevice(device);
     print(
-        'update reading interval in cloud database - users/${user.uid}/devices/${device.uid}');
+        'update reading interval in cloud database - users/${user!.userName}/devices/${device.uid}');
     var deviceRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}')
+        .child('users/${user!.userName}/devices/${device.uid}')
         .update({
           // 'name':  device.name,
           'readingInterval': selectedInterval,
@@ -2228,10 +2322,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
 
   Future<void> updateTankDimensionSettingSubTank() async {
     print(
-        'update tank dimension settings in cloud database - users/${user.uid}/devices/${device.uid}/tank');
+        'update tank dimension settings in cloud database - users/${user!.userName}/devices/${device.uid}/tank');
     var deviceTankRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/tank')
+        .child('users/${user!.userName}/devices/${device.uid}/tank')
         .update({
       // 'name':  device.name,
       'wTankType': (mSelectedTankType == '')
@@ -2314,13 +2408,13 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   Future<void> updateTankDimensionSettings() async {
     // update tank dimension settings in cloud database
     print(
-        'update tank dimension settings in cloud database - users/${user.uid}/devices/${device.uid}');
+        'update tank dimension settings in cloud database - users/${user!.userName}/devices/${device.uid}');
 
     print('>>>>_ShowDevicePageState.tank.wLength=${_ShowDevicePageState.tank.wLength}');
     print('>>>>_ShowDevicePageState.tankDialog.wLength=${tankDialog.wLength}');
     var deviceRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}')
+        .child('users/${user!.userName}/devices/${device.uid}')
         .update({
       // 'name':  device.name,
       'wTankType': (mSelectedTankType == '')
@@ -2402,10 +2496,10 @@ class _ShowDevicePageState extends State<ShowDevicePage>
   Future<void> updateNotificationSettings() async {
     // update notification settings in cloud database
     print(
-        'update notification settings in cloud database - users/${user.uid}/devices/${device.uid}/notification');
+        'update notification settings in cloud database - users/${user!.userName}/devices/${device.uid}/notification');
     var deviceRef = FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/notification')
+        .child('users/${user!.userName}/devices/${device.uid}/notification')
         .update({
           // 'name':  device.name,
           'notifyHumidLower': (this.notificationDialog.notifyHumidLower == 0)
@@ -2457,10 +2551,96 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     return;
   }
 
+  /**
+   * "the Node" to update device sensor that pair to the pump/relay.
+   */
+  Future<void> updateSensorParing(List<OperationUnit> batchUpdatedLists) async {
+    // update notification settings in cloud database
+    print(
+        'update sensor paring list in the cloud database...');
+
+    var deviceRef = FirebaseDatabase.instance.ref();
+    Map<String, Object> values = {};
+    batchUpdatedLists.forEach((element) {
+      // Set the value of 'sensor' paring
+      // var updateSensorRef = FirebaseFirestore.instance.collection("devices").doc(element.uid);
+      if(element.user == '' || element.user == user!.userName) {
+        String path = "devices/" + element.uid;
+        values[path] = {
+          'uid': element.uid,
+          'name': element.name,
+          'status': element.status,
+          'user': user!.userName,
+          'sensor': element.sensor,
+          'updatedWhen': element.updatedWhen,
+        };
+      }
+    });
+    deviceRef.update(values)
+        .onError((error, stackTrace) =>
+        print('updateSensorParing error=${error.toString()}'))
+        .whenComplete(() {
+      print('updated sensor paring success.');
+      showDialog(
+          context: context,
+          builder: (_) => CupertinoAlertDialog(
+            title: Text("Update Successfully"),
+            content:
+            Text("Update sensor paring is successfully."),
+            actions: [
+              CupertinoDialogAction(
+                child: Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          barrierDismissible: false);
+    });
+
+    // // Get a new write batch
+    // final batch = FirebaseFirestore.instance.batch();
+    //
+    // batchUpdatedLists.forEach((element) {
+    //   // Set the value of 'sensor' paring
+    //   var updateSensorRef = FirebaseFirestore.instance.collection("devices").doc(element.uid);
+    //   batch.set(updateSensorRef, {"sensor": element.sensor});
+    // });
+    //
+    // // Commit the batch
+    // batch.commit()
+    //   .onError((error, stackTrace) =>
+    //   print('updateSensorParing error=${error.toString()}'))
+    //   .whenComplete(() {
+    //     print('updated sensor paring success.');
+    //     showDialog(
+    //         context: context,
+    //         builder: (_) => CupertinoAlertDialog(
+    //           title: Text("Update Successfully"),
+    //           content:
+    //           Text("Update sensor paring is successfully."),
+    //           actions: [
+    //             CupertinoDialogAction(
+    //               child: Text("OK"),
+    //               onPressed: () {
+    //                 Navigator.pop(context);
+    //                 Navigator.of(context).pop();
+    //               },
+    //             ),
+    //           ],
+    //         ),
+    //         barrierDismissible: false);
+    //   });
+
+    return;
+  }
+
   Future<List<WeatherData>> getLast10Histories() async {
     final onceHistoriesSnapshot = await FirebaseDatabase.instance
         .ref()
-        .child('users/${user.uid}/devices/${device.uid}/${device.uid}_history')
+        .child('users/${user!.userName}/devices/${device.uid}/${device.uid}_history')
         .orderByKey()
         .limitToLast(10)
         .get();
@@ -3049,6 +3229,77 @@ class _ShowDevicePageState extends State<ShowDevicePage>
         ),
       );
 
+  Future<OperationUnit?>  openOperationUnitInputDialog() =>
+    showDialog<OperationUnit>(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            insetPadding: EdgeInsets.only(
+              top: 2.0,
+              left: 4.0,
+              right: 4.0,
+            ),
+            title: Container(
+                alignment: Alignment.topCenter, child: Text('Operation Unit')
+            ),
+            // content: buildOperationUnitList(),
+            content: OperationUnitListWidget(
+              user: user!.userName,
+              sensorUid: widget.device.uid,
+              operationUnitLists: operationUnitLists,),
+            actions: [
+              TextButton(
+                  onPressed: () {
+
+                    print('zzzzztempOperationUnitLists.length=${Provider.of<TempOperationUnitList>(context, listen: false).tempOperationUnitLists.length}');
+                    // print('xxxxtempOperationUnitLists.length=${context.watch<TempOperationUnitList>().tempOperationUnitLists.length}');
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('CLOSE')),
+              TextButton(
+                // onPressed: submitNotificationSettings,
+                  onPressed: () {
+                    List<OperationUnit> batchUpdatedLists = [];
+
+                    batchUpdatedLists = Provider.of<TempOperationUnitList>(context, listen: false).tempOperationUnitLists;
+
+                    // Validate returns true if the form is valid, or false otherwise.
+                    // print('tempOperationUnitLists.length=${context.read<_OperationUnitListWidgetState>().tempOperationUnitLists.length}');
+                    if (batchUpdatedLists.length > 0) {
+                      // If the form is valid, display a snackbar. In the real world,
+                      // you'd often call a server or save the information in a database.
+                      updateSensorParing(batchUpdatedLists);
+
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(content: Text('Updated Data')),
+                      // );
+
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (_) =>
+                              CupertinoAlertDialog(
+                                title: Text("The pump or relay devices list not found!"),
+                                content: Text(
+                                    "Please turn on and register the pump or relay device.\ And try again."),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: Text("OK"),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ],
+                              ),
+                          barrierDismissible: false);
+                    }
+                  },
+                  child: Text('SUBMIT')),
+            ],
+          ),
+    );
+
+
   void submitNotificationSettings() {
     // Navigator.of(context).pop(name_controller.text);
     //
@@ -3570,6 +3821,139 @@ class _ShowDevicePageState extends State<ShowDevicePage>
     return index;
   }
 
+  Widget drawOperationUnitDetail() {
+
+    var operationUnitRef = FirebaseDatabase.instance
+        .ref()
+        .child('devices')
+        .orderByKey();
+    List<OperationUnit> sensorOperationUnitLists = [];
+    return StreamBuilder(
+        stream: operationUnitRef.onValue,
+        builder: (context, AsyncSnapshot<DatabaseEvent> snapOperationUnit) {
+          if (snapOperationUnit.hasData && snapOperationUnit.data!.snapshot.exists && !snapOperationUnit.hasError) {
+            if (snapOperationUnit.data!.snapshot.value != null) {
+              print('snapOperationUnit.data!.snapshot.value is not null!!');
+
+              operationUnitLists.clear();
+              sensorOperationUnitLists.clear();
+              Map<dynamic, dynamic> values = snapOperationUnit.data!.snapshot.value as Map;
+
+              values.forEach((key, values) {
+                print('key=${key}');
+                print('uid=[${values['uid']}]');
+                print('status=[${values['status']}]');
+                print('updatedWhen=[${values['updatedWhen']}]');
+                print('user=[${values['user']}]');
+                print('sensor=[${values['sensor']}]');
+
+                var sensorVar = values['sensor'] ?? '';
+
+                // Operation Unit List for input dialog
+                operationUnitLists.add(OperationUnit(
+                  id: values['id'] ?? '',
+                  uid: values['uid'] ?? '',
+                  index: int.parse('${values['index'] ?? "0"}'),
+                  name: values['name'] ?? '',
+                  status: values['status'] ?? '',
+                  user: values['user'] ?? '',
+                  sensor: values['sensor'] ?? '',
+                  updatedWhen: values['updatedWhen'] ?? '2022-10-11 14:43:00',
+
+                ));
+
+                if(sensorVar != '' && sensorVar == widget.device.uid) {
+                  sensorOperationUnitLists.add(OperationUnit(
+                    id: values['id'] ?? '',
+                    uid: values['uid'] ?? '',
+                    index: int.parse('${values['index'] ?? "0"}'),
+                    name: values['name'] ?? '',
+                    status: values['status'] ?? '',
+                    user: values['user'] ?? '',
+                    sensor: values['sensor'] ?? '',
+                    updatedWhen: values['updatedWhen'] ?? '2022-10-11 14:43:00',
+
+                  ));
+                }
+              });
+
+            } else {
+              print('snapOperationUnit.data!.snapshot.value is null!!');
+            }
+
+            if(sensorOperationUnitLists.length > 0) {
+              return GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 5.0,
+                mainAxisSpacing: 5.0,
+                scrollDirection: Axis.vertical,
+                // padding: const EdgeInsets.all(10),
+                childAspectRatio: 16 / 9,
+                shrinkWrap: true,
+                children: List.generate(sensorOperationUnitLists.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: OperationUnitCard(operationUnit: sensorOperationUnitLists[index]),
+                  );
+                },),
+              );
+            } else {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'none',
+                      style: TextStyle(fontSize: 14, color: Colors.black45),
+                    ),
+                    // buildCustomPicker(),
+                  ],
+                ),
+              );
+            }
+            // return SingleChildScrollView(
+            //     child: Column(
+            //       mainAxisSize: MainAxisSize.min,
+            //       mainAxisAlignment: MainAxisAlignment.end,
+            //       crossAxisAlignment: CrossAxisAlignment.center,
+            //       children: [
+            //         Text(
+            //           'will send to',
+            //           style: TextStyle(fontSize: 14, color: Colors.black45),
+            //         ),
+            //         Text(
+            //           this.notification.notifyEmail,
+            //           style: TextStyle(fontSize: 14, color: Colors.black87),
+            //         ),
+            //         SizedBox(
+            //           height: 16,
+            //         ),
+            //       ],
+            //     ),
+            //   );
+          } else {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'none',
+                    style: TextStyle(fontSize: 14, color: Colors.black45),
+                  ),
+                  // buildCustomPicker(),
+                ],
+              ),
+            );
+          }
+
+        }
+        );
+  }
+
   Widget drawNotificationDetail() {
     if (this.notification.isSendNotify) {
       return SingleChildScrollView(
@@ -3826,6 +4210,109 @@ class _ShowDevicePageState extends State<ShowDevicePage>
       ],
     );
   }
+
+  // Widget buildOperationUnitList() {
+  //   // List<OperationUnit> tempOperationUnitLists = [];
+  //   bool isSelectionMode = false;
+  //   List<Map> staticData = MyData.data;
+  //   Map<int, bool> selectedFlag = {};
+  //
+  //   tempOperationUnitLists.clear();
+  //
+  //   operationUnitLists.forEach((values) {
+  //     tempOperationUnitLists.add(OperationUnit(
+  //       id: values.id ?? '',
+  //       uid: values.uid ?? '',
+  //       index: int.parse('${values.index ?? "0"}'),
+  //       name: values.name ?? '',
+  //       status: values.status ?? '',
+  //       user: values.user ?? '',
+  //       sensor: values.sensor ?? '',
+  //       updatedWhen: values.updatedWhen ?? '2022-10-11 14:43:00',
+  //     ));
+  //   });
+  //
+  //   return Container(
+  //     width: double.maxFinite,
+  //     child: ListView.builder(
+  //         shrinkWrap: true,
+  //         // itemCount: 35,
+  //         // itemCount: operationUnitLists.length,
+  //         itemCount: tempOperationUnitLists.length,
+  //         // itemBuilder: (context, i) => Text("Item #${i}"),
+  //         itemBuilder: (builder, index) {
+  //           // For the first time selectedFlag[index] will be null
+  //           // so, for that time we will initialize with false
+  //           selectedOperationUnitFlag[index] = selectedOperationUnitFlag[index] ?? false;
+  //           bool? isSelected = selectedOperationUnitFlag[index];
+  //           return ListTile(
+  //                   // onLongPress: () => onLongPress(isSelected!, index),
+  //                   // onTap: () => onTap(isSelected!, index),
+  //                   onTap: () => onTap(tempOperationUnitLists[index].sensor != '' ?? false, index),
+  //                   // title: Text("${operationUnitLists[index].uid}"),
+  //                   title: Text("${tempOperationUnitLists[index].uid}"),
+  //                   // subtitle: Text("${operationUnitLists[index].name}"),
+  //                   subtitle: Text("${tempOperationUnitLists[index].name}|${tempOperationUnitLists[index].sensor}|${tempOperationUnitLists[index].sensor != ''}"),
+  //                   // leading: _buildSelectIcon(isSelected!, operationUnitLists[index].uid),  // updated
+  //                   leading: _buildSelectIcon(tempOperationUnitLists[index].sensor != '' ?? false, tempOperationUnitLists[index].uid),
+  //                 );
+  //               },
+  //               // itemCount: operationUnitLists.length,
+  //             ),
+  //           // );
+  //           // return OperationUnitCard(operationUnit: operationUnitLists[index]);
+  //         // },
+  //     // ),
+  //   );
+  // }
+  //
+  // void onLongPress(bool isSelected, int index) {
+  //   setState(() {
+  //     selectedOperationUnitFlag[index] = !isSelected;
+  //     // If there will be any true in the selectionFlag then
+  //     // selection Mode will be true
+  //     isSelectionOperationUnitMode = selectedOperationUnitFlag.containsValue(true);
+  //   });
+  // }
+  // Widget _buildSelectIcon(bool isSelected, String data) {
+  //   // if (isSelectionOperationUnitMode) {
+  //     return Icon(
+  //       isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+  //       color: Theme.of(context).primaryColor,
+  //     );
+  //   // } else {
+  //   //   return CircleAvatar(
+  //   //     child: Text('${data}'),
+  //   //   );
+  //   // }
+  // }
+  // void onTap(bool isSelected, int index) {
+  //   // if (isSelectionMode) {
+  //   setState(() {
+  //     selectedOperationUnitFlag[index] = !isSelected;
+  //     isSelectionOperationUnitMode = selectedOperationUnitFlag.containsValue(true);
+  //     if(!isSelected) {
+  //       tempOperationUnitLists[index].sensor = widget.device.uid;
+  //     } else {
+  //       tempOperationUnitLists[index].sensor = '';
+  //
+  //     }
+  //   });
+  //   // } else {
+  //   //   // Open Detail Page
+  //   // }
+  // }
+  // void onTap(bool isSelected, int index) {
+  //   if (isSelectionOperationUnitMode) {
+  //     setState(() {
+  //       selectedOperationUnitFlag[index] = !isSelected;
+  //       isSelectionOperationUnitMode = selectedOperationUnitFlag.containsValue(true);
+  //     });
+  //   } else {
+  //     // Open Detail Page
+  //   }
+  // }
+
 }
 
 class TempAndHumidCircularWidget extends StatelessWidget {
@@ -4289,5 +4776,377 @@ class _TankDimensionConfigState extends State<TankDimensionConfig> {
         ],
       ),
     );
+  }
+}
+
+
+class OperationUnitCard extends StatefulWidget {
+  const OperationUnitCard({
+    Key? key,
+    required this.operationUnit,
+  }) : super(key: key);
+
+  final OperationUnit operationUnit;
+
+  @override
+  _OperationUnitCardState createState() => _OperationUnitCardState();
+}
+
+class _OperationUnitCardState extends State<OperationUnitCard> {
+  @override
+  Widget build(BuildContext context) {
+    final TextStyle? nameStyle = Theme.of(context).textTheme.caption;
+    final TextStyle? subtitleStyle = Theme.of(context).textTheme.subtitle1;
+    var numberFormat = NumberFormat('###.##', 'en_US');
+
+    return Bounce(
+      duration: Duration(milliseconds: 100),
+      onPressed: () {
+        print('on press ${widget.operationUnit.uid}');
+
+        // String uri = '/device/${widget.operationUnit.uid}';
+        //
+        // print('${uri} pressed...');
+        // Navigator.pushNamed(context, uri, arguments: widget.operationUnit);
+
+      },
+      child: Tooltip(
+        message: '${widget.operationUnit.uid}\n${widget.operationUnit.status}' ,
+        child: Container(
+          // width: 250,
+          height: 280,
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 0.0, left: 4.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // mainAxisSize: MainAxisSize.max,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0, right: 6.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${(widget.operationUnit.name != '') ? widget.operationUnit.name : widget.operationUnit.uid}',
+                          style: nameStyle,
+                        ),
+                        Text('${globals.getTimeCard(widget.operationUnit.updatedWhen)}',
+                          style: subtitleStyle,
+                        ),
+                        Text('${globals.getDateCard(widget.operationUnit.updatedWhen)}',
+                          style: subtitleStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Container(
+                      // color: Colors.black,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(10.0),
+                          bottomRight: Radius.circular(10.0),
+                        ),
+                        color: const Color(0xff070707),
+                        // border: Border.all(
+                        //     width: 1.0, color: const Color(0xff707070)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text('${calculateActiveStatus(widget.operationUnit.updatedWhen, 5)}', style: TextStyle(fontSize: 2 * (displayHeight(context) * 0.01), color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
+                          Divider(
+                            color: Colors.cyanAccent, //.withOpacity(0.2),
+                            thickness: 1,
+                            // width: 10,
+                            height: 1,
+                            indent: 2,
+                            endIndent: 2,
+                          ),
+                          Text('${widget.operationUnit.user}', style: TextStyle(fontSize: 2 * (displayHeight(context) * 0.01), color: Colors.white, fontFamily: 'Kanit', fontWeight: FontWeight.w400), textAlign: TextAlign.center,),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String calculateActiveStatus(String updatedWhen, int pulseLimit) {
+  String result = 'offline';
+
+  if(updatedWhen != '') {
+    var dtNow = DateTime.now();
+    var dtUpdatedWhen = DateTime.parse(updatedWhen);
+    Duration diff = dtNow.difference(dtUpdatedWhen);
+    if(diff.inMinutes >= pulseLimit) {
+      result = 'offline';
+    } else {
+      result = 'online';
+    }
+  }
+
+  return result;
+}
+
+class OperationUnitListWidget extends StatefulWidget {
+  const OperationUnitListWidget({
+    Key? key,
+    required this.user,
+    required this.sensorUid,
+    required this.operationUnitLists,
+
+  }) : super(key: key);
+
+  final String? user;
+  final String sensorUid;
+  final List<OperationUnit> operationUnitLists;
+
+  @override
+  _OperationUnitListWidgetState createState() => _OperationUnitListWidgetState();
+
+
+}
+class _OperationUnitListWidgetState extends State<OperationUnitListWidget> {
+  List<OperationUnit> tempOperationUnitLists = [];
+
+  bool isSelectionMode = false;
+  List<Map> staticData = MyData.data;
+  Map<int, bool> selectedFlag = {};
+
+  @override
+  void initState() {
+    context.read<TempOperationUnitList>().copy(widget.operationUnitLists);
+
+    //--------------------------
+
+    tempOperationUnitLists.clear();
+
+    widget.operationUnitLists.forEach((values) {
+      // Display only none user and user owned device list
+      if(values.user == '' || values.user == widget.user) {
+        tempOperationUnitLists.add(OperationUnit(
+          id: values.id ?? '',
+          uid: values.uid ?? '',
+          index: int.parse('${values.index ?? "0"}'),
+          name: values.name ?? '',
+          status: values.status ?? '',
+          user: values.user ?? '',
+          sensor: values.sensor ?? '',
+          updatedWhen: values.updatedWhen ?? '2022-10-11 14:43:00',
+        ));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    // tempOperationUnitLists = []..addAll(widget.operationUnitLists);
+
+    return Container(
+      width: double.maxFinite,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemBuilder: (builder, index) {
+          Map data = staticData[index];
+
+          selectedFlag[index] = selectedFlag[index] ?? false;
+          bool? isSelected = selectedFlag[index];
+          return ListTile(
+            // onLongPress: () => onLongPress(isSelected!, index),
+            // onTap: () => onTap(isSelected!, index),
+            onTap: () => onTap(tempOperationUnitLists[index].sensor != '' ?? false, index),
+            title: Text("${tempOperationUnitLists[index].uid}"),
+            subtitle: Text("${tempOperationUnitLists[index].name}|${tempOperationUnitLists[index].sensor}|${tempOperationUnitLists[index].sensor != ''}"),
+            // leading: _buildSelectIcon(isSelected!, data),
+            // leading: _buildSelectIcon(isSelected!, widget.operationUnitLists[index].uid),
+            leading: _buildSelectIcon(tempOperationUnitLists[index].sensor != '' ?? false, tempOperationUnitLists[index].uid),
+          );
+        },
+        // itemCount: staticData.length,
+        itemCount: tempOperationUnitLists.length,
+      ),
+    );
+  }
+  void onTap(bool isSelected, int index) {
+    // if (isSelectionMode) {
+      setState(() {
+        selectedFlag[index] = !isSelected;
+        isSelectionMode = selectedFlag.containsValue(true);
+        if(!isSelected) {
+          tempOperationUnitLists[index].sensor = widget.sensorUid;
+
+          // Provider.of<TempOperationUnitList>(context, listen: false).updateSensor(index, widget.sensorUid);
+          context.read<TempOperationUnitList>().updateSensor(index, widget.sensorUid);
+        } else {
+          tempOperationUnitLists[index].sensor = '';
+          context.read<TempOperationUnitList>().updateSensor(index, '');
+
+        }
+      });
+    // } else {
+    //   // Open Detail Page
+    // }
+  }
+  void onLongPress(bool isSelected, int index) {
+    setState(() {
+      selectedFlag[index] = !isSelected;
+      isSelectionMode = selectedFlag.containsValue(true);
+    });
+  }
+  // Widget _buildSelectIcon(bool isSelected, Map data) {
+  Widget _buildSelectIcon(bool isSelected, String data) {
+    // if (isSelectionMode) {
+      return Icon(
+        isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+        color: Theme.of(context).primaryColor,
+      );
+    // } else {
+    //   return CircleAvatar(
+    //     child: Text('$data}'),
+    //   );
+    // }
+  }
+  Widget? _buildSelectAllButton() {
+    bool isFalseAvailable = selectedFlag.containsValue(false);
+    if (isSelectionMode) {
+      return FloatingActionButton(
+        onPressed: _selectAll,
+        child: Icon(
+          isFalseAvailable ? Icons.done_all : Icons.remove_done,
+        ),
+      );
+    } else {
+      return null;
+    }
+  }
+  void _selectAll() {
+    bool isFalseAvailable = selectedFlag.containsValue(false);
+    // If false will be available then it will select all the checkbox
+    // If there will be no false then it will de-select all
+    selectedFlag.updateAll((key, value) => isFalseAvailable);
+    setState(() {
+      isSelectionMode = selectedFlag.containsValue(true);
+    });
+  }
+}
+
+class TestListChecked extends StatefulWidget {
+  @override
+  _TestListCheckedState createState() => _TestListCheckedState();
+}
+class _TestListCheckedState extends State<TestListChecked> {
+  bool isSelectionMode = false;
+  List<Map> staticData = MyData.data;
+  Map<int, bool> selectedFlag = {};
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.maxFinite,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemBuilder: (builder, index) {
+          Map data = staticData[index];
+          selectedFlag[index] = selectedFlag[index] ?? false;
+          bool? isSelected = selectedFlag[index];
+          return ListTile(
+            onLongPress: () => onLongPress(isSelected!, index),
+            onTap: () => onTap(isSelected!, index),
+            title: Text("${data['name']}"),
+            subtitle: Text("${data['email']}"),
+            leading: _buildSelectIcon(isSelected!, data),
+          );
+        },
+        itemCount: staticData.length,
+      ),
+    );
+    // return Scaffold(
+    //   appBar: AppBar(
+    //     title: Text('Select Item'),
+    //   ),
+    //   body: ListView.builder(
+    //     itemBuilder: (builder, index) {
+    //       Map data = staticData[index];
+    //       selectedFlag[index] = selectedFlag[index] ?? false;
+    //       bool? isSelected = selectedFlag[index];
+    //       return ListTile(
+    //         onLongPress: () => onLongPress(isSelected!, index),
+    //         onTap: () => onTap(isSelected!, index),
+    //         title: Text("${data['name']}"),
+    //         subtitle: Text("${data['email']}"),
+    //         leading: _buildSelectIcon(isSelected!, data),
+    //       );
+    //     },
+    //     itemCount: staticData.length,
+    //   ),
+    //   floatingActionButton: _buildSelectAllButton(),
+    // );
+  }
+  void onTap(bool isSelected, int index) {
+    if (isSelectionMode) {
+      setState(() {
+        selectedFlag[index] = !isSelected;
+        isSelectionMode = selectedFlag.containsValue(true);
+      });
+    } else {
+      // Open Detail Page
+    }
+  }
+  void onLongPress(bool isSelected, int index) {
+    setState(() {
+      selectedFlag[index] = !isSelected;
+      isSelectionMode = selectedFlag.containsValue(true);
+    });
+  }
+  Widget _buildSelectIcon(bool isSelected, Map data) {
+    if (isSelectionMode) {
+      return Icon(
+        isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+        color: Theme.of(context).primaryColor,
+      );
+    } else {
+      return CircleAvatar(
+        child: Text('${data['id']}'),
+      );
+    }
+  }
+  Widget? _buildSelectAllButton() {
+    bool isFalseAvailable = selectedFlag.containsValue(false);
+    if (isSelectionMode) {
+      return FloatingActionButton(
+        onPressed: _selectAll,
+        child: Icon(
+          isFalseAvailable ? Icons.done_all : Icons.remove_done,
+        ),
+      );
+    } else {
+      return null;
+    }
+  }
+  void _selectAll() {
+    bool isFalseAvailable = selectedFlag.containsValue(false);
+    // If false will be available then it will select all the checkbox
+    // If there will be no false then it will de-select all
+    selectedFlag.updateAll((key, value) => isFalseAvailable);
+    setState(() {
+      isSelectionMode = selectedFlag.containsValue(true);
+    });
   }
 }

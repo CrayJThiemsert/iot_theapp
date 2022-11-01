@@ -1,5 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:iot_theapp/objectbox.dart';
+import 'package:iot_theapp/pages/device/view/temp_operation_unit_list.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:flare_splash_screen/flare_splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +21,16 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'pages/home/home.dart';
 // import 'dart:io' show Platform;
 
-void main() async {
+/// Provides access to the ObjectBox Store throughout the app.
+late ObjectBox objectbox;
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // This is required so ObjectBox can get the application directory
+  // to store the database in.
+  objectbox = await ObjectBox.create();
+
   // await Firebase.initializeApp();
   // final FirebaseApp app = await Firebase.initializeApp();
   final FirebaseApp app = await Firebase.initializeApp(
@@ -47,10 +58,19 @@ void main() async {
   print('Firebase app.name=${app.name}');
 
   runApp(
-    Constants(
-      child: MyApp(app: app),
-      // child: MyApp(),
+    /// Providers are above [MyApp] instead of inside it, so that tests
+    /// can use [MyApp] while mocking the providers
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TempOperationUnitList()),
+      ],
+      // child: const MyApp(),
+      child: Constants(
+        child: MyApp(app: app),
+        // child: MyApp(),
+      ),
     ),
+
   );
 }
 
